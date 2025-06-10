@@ -93,9 +93,9 @@ app = FastAPI(
     redoc_url="/redoc" if settings.debug else None,
     lifespan=lifespan,
     contact={
-        "name": "FinSolve Technologies",
+        "name": "Dr. Erick K. Yegon",
         "url": "https://finsolve.com",
-        "email": "support@finsolve.com"
+        "email": "keyegon@gmail.com"
     },
     license_info={
         "name": "FinSolve Technologies License",

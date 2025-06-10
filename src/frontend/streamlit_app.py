@@ -1563,6 +1563,239 @@ class FinSolveAIAssistant:
             </div>
             """, unsafe_allow_html=True)
 
+    def show_inquiry_form(self):
+        """Display email inquiry form in a modal-like interface"""
+        st.session_state.show_inquiry_form = True
+
+    def display_inquiry_form(self):
+        """Display the email inquiry form"""
+        st.markdown("## 📧 Send Inquiry to Expert")
+        st.markdown("*Route your question to the right department for expert assistance*")
+
+        with st.form("inquiry_form"):
+            # Department selection
+            department = st.selectbox(
+                "🏢 Select Department",
+                ["Finance", "HR", "Engineering", "Marketing", "General Support"],
+                help="Choose the most relevant department for your inquiry"
+            )
+
+            # Inquiry type
+            inquiry_type = st.selectbox(
+                "📋 Inquiry Type",
+                ["Question", "Technical Support", "Feature Request", "Bug Report", "General Feedback"],
+                help="Select the type of inquiry"
+            )
+
+            # Priority level
+            priority = st.selectbox(
+                "⚡ Priority Level",
+                ["Low", "Medium", "High", "Urgent"],
+                index=1,
+                help="Select the urgency of your inquiry"
+            )
+
+            # Subject
+            subject = st.text_input(
+                "📝 Subject",
+                placeholder="Brief description of your inquiry",
+                help="Provide a clear, concise subject line"
+            )
+
+            # Message
+            message = st.text_area(
+                "💬 Message",
+                placeholder="Describe your inquiry in detail...",
+                height=150,
+                help="Provide as much detail as possible to help us assist you better"
+            )
+
+            # Contact preference
+            contact_preference = st.selectbox(
+                "📞 Preferred Contact Method",
+                ["Email", "Phone", "Both"],
+                help="How would you like us to respond?"
+            )
+
+            # Submit button
+            col1, col2 = st.columns(2)
+
+            with col1:
+                submit_button = st.form_submit_button(
+                    "📨 Send Inquiry",
+                    use_container_width=True,
+                    type="primary"
+                )
+
+            with col2:
+                cancel_button = st.form_submit_button(
+                    "❌ Cancel",
+                    use_container_width=True
+                )
+
+            if cancel_button:
+                st.session_state.show_inquiry_form = False
+                st.rerun()
+
+            if submit_button:
+                if subject and message:
+                    success = self.send_inquiry_email(
+                        department=department,
+                        inquiry_type=inquiry_type,
+                        priority=priority,
+                        subject=subject,
+                        message=message,
+                        contact_preference=contact_preference
+                    )
+
+                    if success:
+                        st.success("✅ Inquiry sent successfully! You'll receive a confirmation email shortly.")
+                        st.info("📧 Expected response time: Within 48 hours")
+                        st.session_state.show_inquiry_form = False
+                        time.sleep(2)
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to send inquiry. Please try again or contact us directly.")
+                else:
+                    st.error("⚠️ Please fill in both subject and message fields.")
+
+    def send_inquiry_email(self, department: str, inquiry_type: str, priority: str,
+                          subject: str, message: str, contact_preference: str) -> bool:
+        """Send inquiry email to the appropriate department"""
+        try:
+            # Import email service
+            import sys
+            from pathlib import Path
+            sys.path.append(str(Path(__file__).parent.parent))
+            from utils.email_service import email_service
+
+            # Get user info
+            user_info = st.session_state.get('user_info', {})
+            user_name = user_info.get('full_name', 'Unknown User')
+            user_email = user_info.get('email', 'unknown@example.com')
+            user_role = user_info.get('role', 'Employee')
+
+            # Department email mapping (in production, these would be actual department emails)
+            department_emails = {
+                "Finance": "keyegon@gmail.com",  # Finance Director
+                "HR": "keyegon@gmail.com",       # HR Manager
+                "Engineering": "keyegon@gmail.com",  # Engineering Lead
+                "Marketing": "keyegon@gmail.com",    # Marketing Manager
+                "General Support": "keyegon@gmail.com"  # General Support
+            }
+
+            recipient_email = department_emails.get(department, "keyegon@gmail.com")
+
+            # Create inquiry data
+            inquiry_data = {
+                "inquiry_id": f"INQ-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+                "department": department,
+                "inquiry_type": inquiry_type,
+                "priority": priority,
+                "subject": subject,
+                "message": message,
+                "contact_preference": contact_preference,
+                "user_name": user_name,
+                "user_email": user_email,
+                "user_role": user_role,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "system": "FinSolve AI Assistant"
+            }
+
+            # Send notification to department
+            department_success = email_service.send_notification(
+                recipient=recipient_email,
+                notification_type="info",
+                data=inquiry_data
+            )
+
+            # Send confirmation to user
+            user_success = email_service.send_email(
+                to_emails=[user_email],
+                subject=f"✅ Inquiry Confirmation - {inquiry_data['inquiry_id']}",
+                body=f"""
+Dear {user_name},
+
+Thank you for contacting FinSolve Technologies AI Assistant support.
+
+Your inquiry has been received and assigned ID: {inquiry_data['inquiry_id']}
+
+Inquiry Details:
+- Department: {department}
+- Type: {inquiry_type}
+- Priority: {priority}
+- Subject: {subject}
+
+What happens next:
+1. Your inquiry has been routed to our {department} team
+2. You will receive a response within 48 hours
+3. For urgent matters, please call our office line
+
+Thank you for using FinSolve AI Assistant!
+
+Best regards,
+Dr. Erick K. Yegon
+FinSolve Technologies AI Assistant
+keyegon@gmail.com
+                """,
+                html_body=f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Inquiry Confirmation</title>
+</head>
+<body style="font-family: 'Roboto', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #0D1B2A 0%, #1a2332 100%); padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #00F5D4; margin: 0; font-size: 28px;">🏦 FinSolve Technologies</h1>
+        <p style="color: #FFFFFF; margin: 10px 0 0 0; font-size: 18px;">Inquiry Confirmation</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+        <h2 style="color: #0D1B2A; margin-top: 0;">Dear {user_name},</h2>
+        <p>Thank you for contacting <strong>FinSolve Technologies AI Assistant</strong> support.</p>
+
+        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #00F5D4; margin-top: 0;">✅ Inquiry Received</h3>
+            <p><strong>Inquiry ID:</strong> {inquiry_data['inquiry_id']}</p>
+        </div>
+
+        <h3 style="color: #0D1B2A;">📋 Inquiry Details:</h3>
+        <ul style="background: #f1f1f1; padding: 15px; border-radius: 6px;">
+            <li><strong>Department:</strong> {department}</li>
+            <li><strong>Type:</strong> {inquiry_type}</li>
+            <li><strong>Priority:</strong> {priority}</li>
+            <li><strong>Subject:</strong> {subject}</li>
+        </ul>
+
+        <h3 style="color: #00F5D4;">🚀 What happens next:</h3>
+        <ol>
+            <li>Your inquiry has been routed to our <strong>{department}</strong> team</li>
+            <li>You will receive a response within <strong>48 hours</strong></li>
+            <li>For urgent matters, please call our office line</li>
+        </ol>
+    </div>
+
+    <div style="background: #0D1B2A; padding: 20px; border-radius: 8px; text-align: center; color: #FFFFFF;">
+        <p style="margin: 0; font-size: 16px;">Thank you for using <strong>FinSolve AI Assistant!</strong></p>
+        <hr style="border: none; border-top: 1px solid #00F5D4; margin: 15px 0;">
+        <p style="margin: 0; color: #00F5D4;">
+            <strong>Dr. Erick K. Yegon</strong><br>
+            FinSolve Technologies AI Assistant<br>
+            <a href="mailto:keyegon@gmail.com" style="color: #00F5D4;">keyegon@gmail.com</a>
+        </p>
+    </div>
+</body>
+</html>
+                """
+            )
+
+            return department_success and user_success
+
+        except Exception as e:
+            logger.error(f"Failed to send inquiry email: {str(e)}")
+            return False
+
     def display_visualization(self, visualization: Dict[str, Any]):
         """Display enhanced visualizations with professional presentation."""
         try:
@@ -1860,10 +2093,31 @@ class FinSolveAIAssistant:
                 st.markdown("### 📊 Session Stats")
                 total = len(st.session_state.chat_history)
                 user_msgs = len([m for m in st.session_state.chat_history if m["message_type"] == "user"])
-                
+
                 st.metric("Messages", total)
                 st.metric("Questions", user_msgs)
                 st.metric("Responses", total - user_msgs)
+
+            # Email Inquiry System
+            st.markdown("---")
+            st.markdown("### 📧 Need Help?")
+            st.markdown("*Get expert assistance from our team*")
+
+            if st.button("📨 Send Inquiry to Expert", use_container_width=True, help="Route your question to the right department"):
+                self.show_inquiry_form()
+
+            # Contact Information
+            st.markdown("### 📞 Contact Information")
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(13, 27, 42, 0.05) 100%);
+                        padding: 1rem; border-radius: 12px; margin-bottom: 1rem;
+                        border: 2px solid rgba(0, 245, 212, 0.3);">
+                <p style="margin: 0.2rem 0; color: #0D1B2A;"><strong>📧 Email:</strong> keyegon@gmail.com</p>
+                <p style="margin: 0.2rem 0; color: #0D1B2A;"><strong>🏢 Developer:</strong> Dr. Erick K. Yegon</p>
+                <p style="margin: 0.2rem 0; color: #0D1B2A;"><strong>⏰ Response:</strong> Within 48 hours</p>
+                <p style="margin: 0.2rem 0; color: #0D1B2A;"><strong>🚨 Urgent:</strong> Call office line</p>
+            </div>
+            """, unsafe_allow_html=True)
     
     def display_message_input(self):
         """Display enhanced message input interface."""
@@ -2004,8 +2258,11 @@ class FinSolveAIAssistant:
         main_col, _ = st.columns([3, 1])
         
         with main_col:
+            # Check if inquiry form should be displayed
+            if hasattr(st.session_state, 'show_inquiry_form') and st.session_state.show_inquiry_form:
+                self.display_inquiry_form()
             # Check if dashboard should be displayed
-            if hasattr(st.session_state, 'show_dashboard') and st.session_state.show_dashboard:
+            elif hasattr(st.session_state, 'show_dashboard') and st.session_state.show_dashboard:
                 dashboard_type = st.session_state.show_dashboard
                 user_role = st.session_state.user_info.get('role', 'employee')
 

@@ -147,6 +147,13 @@ class Settings(BaseSettings):
     enable_metrics: bool = Field(default=True, env="ENABLE_METRICS")
     metrics_port: int = Field(default=9090, env="METRICS_PORT")
     enable_tracing: bool = Field(default=True, env="ENABLE_TRACING")
+
+    # Email Configuration
+    system_email: str = Field(default="keyegon@gmail.com", env="SYSTEM_EMAIL")
+    email_password: str = Field(default="", env="EMAIL_PASSWORD")
+    smtp_server: str = Field(default="smtp.gmail.com", env="SMTP_SERVER")
+    smtp_port: int = Field(default=587, env="SMTP_PORT")
+    email_use_tls: bool = Field(default=True, env="EMAIL_USE_TLS")
     
     @field_validator("cors_origins", mode="before")
     @classmethod
