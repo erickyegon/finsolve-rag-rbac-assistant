@@ -18,7 +18,14 @@ from pathlib import Path
 import logging
 from datetime import datetime
 
-from ..core.config import settings
+try:
+    from ..core.config import settings
+except ImportError:
+    # Fallback for when running from different contexts
+    import sys
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parent.parent))
+    from core.config import settings
 
 logger = logging.getLogger(__name__)
 

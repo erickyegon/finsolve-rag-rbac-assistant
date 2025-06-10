@@ -26,6 +26,16 @@ import re
 from loguru import logger
 from pathlib import Path
 
+# Email service import
+try:
+    import sys
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
+    from src.utils.email_service import email_service
+except ImportError:
+    email_service = None
+    logger.warning("Email service not available - inquiry emails will be disabled")
+
 # ============================
 # CONFIGURATION & CONSTANTS
 # ============================
@@ -1663,11 +1673,10 @@ class FinSolveAIAssistant:
                           subject: str, message: str, contact_preference: str) -> bool:
         """Send inquiry email to the appropriate department"""
         try:
-            # Import email service
-            import sys
-            from pathlib import Path
-            sys.path.append(str(Path(__file__).parent.parent))
-            from utils.email_service import email_service
+            # Check if email service is available
+            if email_service is None:
+                logger.error("Email service not available")
+                return False
 
             # Get user info
             user_info = st.session_state.get('user_info', {})
@@ -2173,14 +2182,24 @@ keyegon@gmail.com
                     st.rerun()
     
     def login_page(self):
-        """Display enhanced login page."""
+        """Display enhanced login page with registration option."""
         # Main header
         self.display_header("FinSolve Technologies", "AI-Powered Financial Intelligence Platform")
-        
+
         # System status
         self.display_system_status()
-        
-        # Login form
+
+        # Tab selection for Login/Register
+        tab1, tab2 = st.tabs(["🔐 Login", "👤 Register"])
+
+        with tab1:
+            self.display_login_form()
+
+        with tab2:
+            self.display_registration_form()
+
+    def display_login_form(self):
+        """Display the login form."""
         _, col2, _ = st.columns([1, 2, 1])
         
         with col2:
@@ -2238,7 +2257,380 @@ keyegon@gmail.com
             
             # Features preview
             self.display_features_preview()
-    
+
+    def display_registration_form(self):
+        """Display the user registration form."""
+        _, col2, _ = st.columns([1, 2, 1])
+
+        with col2:
+            st.markdown("""
+            <div class="finsolve-card" style="padding: 2rem;">
+                <h2 style="text-align: center; color: var(--finsolve-deep-blue); margin-bottom: 2rem;">
+                    👤 New Employee Registration
+                </h2>
+                <p style="text-align: center; color: var(--finsolve-dark-grey); margin-bottom: 2rem;">
+                    Join the FinSolve Technologies AI Assistant platform
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Registration success/error messages
+            if hasattr(st.session_state, 'registration_message'):
+                if st.session_state.registration_success:
+                    st.success(st.session_state.registration_message)
+                else:
+                    st.error(st.session_state.registration_message)
+
+            with st.form("registration_form"):
+                st.markdown("### 📝 Personal Information")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    first_name = st.text_input(
+                        "First Name *",
+                        placeholder="Enter your first name",
+                        help="Your legal first name"
+                    )
+
+                with col2:
+                    last_name = st.text_input(
+                        "Last Name *",
+                        placeholder="Enter your last name",
+                        help="Your legal last name"
+                    )
+
+                email = st.text_input(
+                    "Email Address *",
+                    placeholder="your.name@company.com",
+                    help="Your company email address (will be used as username)"
+                )
+
+                phone = st.text_input(
+                    "Phone Number",
+                    placeholder="+1 (555) 123-4567",
+                    help="Your contact phone number (optional)"
+                )
+
+                st.markdown("### 🏢 Employment Information")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    department = st.selectbox(
+                        "Department *",
+                        ["Engineering", "Finance", "HR", "Marketing", "Sales", "Customer Support",
+                         "IT Security", "Data Analytics", "R&D", "QA", "Operations", "Legal", "Executive"],
+                        help="Select your primary department"
+                    )
+
+                with col2:
+                    role = st.selectbox(
+                        "Role Level *",
+                        ["Employee", "Manager", "Director", "C-Level Executive"],
+                        help="Select your role level for access permissions"
+                    )
+
+                job_title = st.text_input(
+                    "Job Title *",
+                    placeholder="e.g., Senior Software Engineer",
+                    help="Your official job title"
+                )
+
+                employee_id = st.text_input(
+                    "Employee ID",
+                    placeholder="EMP-2024-001",
+                    help="Your employee ID (if available)"
+                )
+
+                manager_email = st.text_input(
+                    "Manager Email",
+                    placeholder="manager@company.com",
+                    help="Your direct manager's email (for approval)"
+                )
+
+                st.markdown("### 🔐 Access Requirements")
+
+                access_reason = st.text_area(
+                    "Reason for Access *",
+                    placeholder="Describe why you need access to the FinSolve AI Assistant...",
+                    height=100,
+                    help="Explain your business need for system access"
+                )
+
+                # Terms and conditions
+                terms_accepted = st.checkbox(
+                    "I agree to the Terms of Service and Privacy Policy *",
+                    help="You must accept the terms to register"
+                )
+
+                # Submit button
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    register_button = st.form_submit_button(
+                        "📝 Register Account" if not st.session_state.loading else "⏳ Processing...",
+                        use_container_width=True,
+                        type="primary",
+                        disabled=st.session_state.loading
+                    )
+
+                with col2:
+                    clear_button = st.form_submit_button(
+                        "🗑️ Clear Form",
+                        use_container_width=True
+                    )
+
+                if clear_button:
+                    st.rerun()
+
+                if register_button and not st.session_state.loading:
+                    # Validate required fields
+                    if not all([first_name, last_name, email, department, role, job_title, access_reason, terms_accepted]):
+                        st.error("⚠️ Please fill in all required fields (*) and accept the terms.")
+                    elif not self.validate_email(email):
+                        st.error("⚠️ Please enter a valid email address.")
+                    else:
+                        # Process registration
+                        self.register_user({
+                            'first_name': first_name,
+                            'last_name': last_name,
+                            'email': email,
+                            'phone': phone,
+                            'department': department,
+                            'role': role,
+                            'job_title': job_title,
+                            'employee_id': employee_id,
+                            'manager_email': manager_email,
+                            'access_reason': access_reason
+                        })
+
+    def validate_email(self, email: str) -> bool:
+        """Validate email format."""
+        import re
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(pattern, email) is not None
+
+    def register_user(self, user_data: dict):
+        """Register a new user and send welcome email."""
+        try:
+            st.session_state.loading = True
+
+            with st.spinner("📝 Creating your account..."):
+                # Call registration API
+                response = self.api_client.post(
+                    "/auth/register",
+                    json=user_data
+                )
+
+                if response and response.status_code == 201:
+                    data = response.json()
+
+                    # Send welcome email with credentials
+                    self.send_welcome_email(user_data, data.get('temporary_password'))
+
+                    st.session_state.registration_success = True
+                    st.session_state.registration_message = f"""
+                    ✅ Registration successful!
+
+                    📧 Welcome email sent to {user_data['email']} with your login credentials.
+
+                    🔐 Please check your email for your temporary password and login instructions.
+
+                    ⏰ Your account will be activated within 24 hours.
+                    """
+
+                    time.sleep(3)
+                    st.rerun()
+
+                else:
+                    error_msg = "Registration failed. Please try again."
+                    if response:
+                        try:
+                            error_data = response.json()
+                            error_msg = error_data.get('detail', error_msg)
+                        except:
+                            pass
+
+                    st.session_state.registration_success = False
+                    st.session_state.registration_message = f"❌ {error_msg}"
+
+        except Exception as e:
+            st.session_state.registration_success = False
+            st.session_state.registration_message = f"🔌 Connection error: {str(e)}"
+            logger.error(f"Registration error: {e}")
+        finally:
+            st.session_state.loading = False
+
+    def send_welcome_email(self, user_data: dict, temp_password: str):
+        """Send welcome email with login credentials."""
+        try:
+            # Check if email service is available
+            if email_service is None:
+                logger.error("Email service not available")
+                return
+
+            full_name = f"{user_data['first_name']} {user_data['last_name']}"
+
+            # Create welcome email data
+            welcome_data = {
+                "welcome_type": "New Employee Registration",
+                "full_name": full_name,
+                "email": user_data['email'],
+                "department": user_data['department'],
+                "role": user_data['role'],
+                "job_title": user_data['job_title'],
+                "temporary_password": temp_password,
+                "login_url": "http://localhost:8501",
+                "support_email": "keyegon@gmail.com",
+                "registration_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+
+            # Send welcome email
+            email_service.send_email(
+                to_emails=[user_data['email']],
+                subject="🎉 Welcome to FinSolve AI Assistant - Your Account is Ready!",
+                body=self.generate_welcome_email_text(welcome_data),
+                html_body=self.generate_welcome_email_html(welcome_data)
+            )
+
+            # Send notification to admin
+            email_service.send_notification(
+                recipient="keyegon@gmail.com",
+                notification_type="info",
+                data={
+                    "event": "New User Registration",
+                    "user_name": full_name,
+                    "user_email": user_data['email'],
+                    "department": user_data['department'],
+                    "role": user_data['role'],
+                    "job_title": user_data['job_title'],
+                    "access_reason": user_data['access_reason']
+                }
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to send welcome email: {str(e)}")
+
+    def generate_welcome_email_text(self, data: dict) -> str:
+        """Generate plain text welcome email."""
+        return f"""
+Welcome to FinSolve Technologies AI Assistant!
+
+Dear {data['full_name']},
+
+Congratulations! Your account has been successfully created for the FinSolve AI Assistant platform.
+
+Account Details:
+- Name: {data['full_name']}
+- Email: {data['email']}
+- Department: {data['department']}
+- Role: {data['role']}
+- Job Title: {data['job_title']}
+
+Login Credentials:
+- Username: {data['email']}
+- Temporary Password: {data['temporary_password']}
+- Login URL: {data['login_url']}
+
+Important Security Notes:
+1. Please change your password after your first login
+2. Keep your credentials secure and confidential
+3. Your account will be activated within 24 hours
+4. Contact support if you experience any issues
+
+Getting Started:
+1. Visit the login page: {data['login_url']}
+2. Use your email as username
+3. Enter the temporary password provided above
+4. Follow the prompts to set up your new password
+5. Explore the AI Assistant features for your department
+
+For support or questions, contact:
+Dr. Erick K. Yegon
+Email: {data['support_email']}
+
+Welcome to the team!
+
+Best regards,
+FinSolve Technologies AI Assistant Team
+Developed by Dr. Erick K. Yegon
+        """
+
+    def generate_welcome_email_html(self, data: dict) -> str:
+        """Generate HTML welcome email."""
+        return f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Welcome to FinSolve AI Assistant</title>
+</head>
+<body style="font-family: 'Roboto', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #0D1B2A 0%, #1a2332 100%); padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #00F5D4; margin: 0; font-size: 28px;">🎉 Welcome to FinSolve!</h1>
+        <p style="color: #FFFFFF; margin: 10px 0 0 0; font-size: 18px;">AI Assistant Platform</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
+        <h2 style="color: #0D1B2A; margin-top: 0;">Dear {data['full_name']},</h2>
+        <p>Congratulations! Your account has been successfully created for the <strong>FinSolve AI Assistant</strong> platform.</p>
+
+        <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #00F5D4; margin-top: 0;">👤 Account Details</h3>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li><strong>Name:</strong> {data['full_name']}</li>
+                <li><strong>Email:</strong> {data['email']}</li>
+                <li><strong>Department:</strong> {data['department']}</li>
+                <li><strong>Role:</strong> {data['role']}</li>
+                <li><strong>Job Title:</strong> {data['job_title']}</li>
+            </ul>
+        </div>
+
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <h3 style="color: #856404; margin-top: 0;">🔐 Login Credentials</h3>
+            <p style="margin: 5px 0;"><strong>Username:</strong> {data['email']}</p>
+            <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{data['temporary_password']}</code></p>
+            <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="{data['login_url']}" style="color: #00F5D4;">{data['login_url']}</a></p>
+        </div>
+
+        <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #bee5eb;">
+            <h3 style="color: #0c5460; margin-top: 0;">🔒 Important Security Notes</h3>
+            <ol style="margin: 0; padding-left: 20px;">
+                <li>Please change your password after your first login</li>
+                <li>Keep your credentials secure and confidential</li>
+                <li>Your account will be activated within 24 hours</li>
+                <li>Contact support if you experience any issues</li>
+            </ol>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #00F5D4 0%, #00d4b8 100%); padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+            <h3 style="margin: 0 0 10px 0; color: #0D1B2A;">🚀 Getting Started</h3>
+            <ol style="margin: 0; padding-left: 20px; text-align: left; color: #0D1B2A;">
+                <li>Visit the login page: <a href="{data['login_url']}" style="color: #0D1B2A; font-weight: bold;">{data['login_url']}</a></li>
+                <li>Use your email as username</li>
+                <li>Enter the temporary password provided above</li>
+                <li>Follow the prompts to set up your new password</li>
+                <li>Explore the AI Assistant features for your department</li>
+            </ol>
+        </div>
+    </div>
+
+    <div style="background: #0D1B2A; padding: 20px; border-radius: 8px; text-align: center; color: #FFFFFF;">
+        <p style="margin: 0; font-size: 16px;">For support or questions, contact:</p>
+        <p style="margin: 5px 0 0 0; color: #00F5D4;">
+            <strong>Dr. Erick K. Yegon</strong><br>
+            <a href="mailto:{data['support_email']}" style="color: #00F5D4;">{data['support_email']}</a>
+        </p>
+        <hr style="border: none; border-top: 1px solid #00F5D4; margin: 15px 0;">
+        <p style="margin: 0; font-size: 14px;">
+            Welcome to the team!<br>
+            <strong>FinSolve Technologies AI Assistant</strong><br>
+            Developed by Dr. Erick K. Yegon
+        </p>
+    </div>
+</body>
+</html>
+        """
+
     def main_chat_interface(self):
         """Display enhanced main chat interface."""
         user = st.session_state.user_info

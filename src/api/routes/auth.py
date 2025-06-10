@@ -3,7 +3,8 @@ Authentication Routes for FinSolve RBAC Chatbot API
 Comprehensive authentication endpoints including login, logout, registration,
 token refresh, and session management.
 
-Author: Peter Pandey
+Author: Dr. Erick K. Yegon
+Email: keyegon@gmail.com
 Version: 1.0.0
 """
 
@@ -12,13 +13,15 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import Dict, Any, List
 import time
+import secrets
+import string
 from loguru import logger
 
 from ...database.connection import get_db
 from ...auth.service import auth_service, AuthenticationError
 from ...auth.models import (
-    UserCreate, UserLogin, UserResponse, Token, 
-    SessionInfo, User, UserUpdate
+    UserCreate, UserLogin, UserResponse, Token,
+    SessionInfo, User, UserUpdate, UserRegistration, RegistrationResponse
 )
 from ...core.config import UserRole
 from ..dependencies import (
@@ -27,6 +30,111 @@ from ..dependencies import (
 )
 
 router = APIRouter()
+
+
+@router.post("/register-employee", response_model=RegistrationResponse, status_code=status.HTTP_201_CREATED)
+async def register_new_employee(
+    registration_data: UserRegistration,
+    db: Session = Depends(get_db)
+) -> RegistrationResponse:
+    """
+    Public registration endpoint for new employees
+    Creates a new user account with temporary password and sends welcome email
+    """
+    try:
+        # Generate temporary password
+        temp_password = generate_temporary_password()
+
+        # Map role string to UserRole enum
+        role_mapping = {
+            "Employee": UserRole.EMPLOYEE,
+            "Manager": UserRole.MANAGER,
+            "Director": UserRole.DIRECTOR,
+            "C-Level Executive": UserRole.C_LEVEL
+        }
+
+        user_role = role_mapping.get(registration_data.role, UserRole.EMPLOYEE)
+
+        # Create username from email
+        username = registration_data.email.split('@')[0]
+
+        # Create UserCreate object
+        user_create = UserCreate(
+            email=registration_data.email,
+            username=username,
+            full_name=f"{registration_data.first_name} {registration_data.last_name}",
+            password=temp_password,
+            role=user_role,
+            department=registration_data.department,
+            employee_id=registration_data.employee_id
+        )
+
+        # Check if user already exists
+        existing_user = auth_service.get_user_by_email(db, registration_data.email)
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this email already exists"
+            )
+
+        # Create user (initially inactive for approval)
+        new_user = auth_service.create_user(db, user_create)
+        new_user.is_active = False  # Require activation
+        db.commit()
+
+        # Store additional registration data (you might want to create a separate table for this)
+        # For now, we'll log it
+        logger.info(f"New employee registration: {registration_data.email}, "
+                   f"Department: {registration_data.department}, "
+                   f"Job Title: {registration_data.job_title}, "
+                   f"Manager: {registration_data.manager_email}, "
+                   f"Reason: {registration_data.access_reason}")
+
+        logger.info(f"New employee registered: {new_user.email} (ID: {new_user.id})")
+
+        return RegistrationResponse(
+            message="Registration successful! Check your email for login credentials.",
+            user_id=new_user.id,
+            email=new_user.email,
+            temporary_password=temp_password,
+            status="pending_activation"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Employee registration failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed. Please try again."
+        )
+
+
+def generate_temporary_password(length: int = 12) -> str:
+    """Generate a secure temporary password"""
+    # Ensure we have at least one of each character type
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits = string.digits
+    special = "!@#$%^&*"
+
+    # Start with one of each required type
+    password = [
+        secrets.choice(lowercase),
+        secrets.choice(uppercase),
+        secrets.choice(digits),
+        secrets.choice(special)
+    ]
+
+    # Fill the rest with random choices from all types
+    all_chars = lowercase + uppercase + digits + special
+    for _ in range(length - 4):
+        password.append(secrets.choice(all_chars))
+
+    # Shuffle the password list
+    secrets.SystemRandom().shuffle(password)
+
+    return ''.join(password)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

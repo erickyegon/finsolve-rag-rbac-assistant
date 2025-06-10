@@ -118,7 +118,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """User creation model"""
     password: str
-    
+
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
@@ -131,7 +131,7 @@ class UserCreate(UserBase):
         if not any(c.isdigit() for c in v):
             raise ValueError('Password must contain at least one digit')
         return v
-    
+
     @field_validator('username')
     @classmethod
     def validate_username(cls, v):
@@ -141,6 +141,63 @@ class UserCreate(UserBase):
         if not re.match(r'^[a-zA-Z0-9._-]+$', v):
             raise ValueError('Username must contain only alphanumeric characters, dots, underscores, or hyphens')
         return v
+
+
+class UserRegistration(BaseModel):
+    """Public user registration model for new employees"""
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    department: str
+    role: str  # Will be mapped to UserRole
+    job_title: str
+    employee_id: Optional[str] = None
+    manager_email: Optional[str] = None
+    access_reason: str
+
+    @field_validator('first_name', 'last_name')
+    @classmethod
+    def validate_names(cls, v):
+        if len(v.strip()) < 2:
+            raise ValueError('Name must be at least 2 characters long')
+        return v.strip()
+
+    @field_validator('department')
+    @classmethod
+    def validate_department(cls, v):
+        valid_departments = [
+            "Engineering", "Finance", "HR", "Marketing", "Sales",
+            "Customer Support", "IT Security", "Data Analytics",
+            "R&D", "QA", "Operations", "Legal", "Executive"
+        ]
+        if v not in valid_departments:
+            raise ValueError(f'Department must be one of: {", ".join(valid_departments)}')
+        return v
+
+    @field_validator('role')
+    @classmethod
+    def validate_role(cls, v):
+        valid_roles = ["Employee", "Manager", "Director", "C-Level Executive"]
+        if v not in valid_roles:
+            raise ValueError(f'Role must be one of: {", ".join(valid_roles)}')
+        return v
+
+    @field_validator('access_reason')
+    @classmethod
+    def validate_access_reason(cls, v):
+        if len(v.strip()) < 10:
+            raise ValueError('Access reason must be at least 10 characters long')
+        return v.strip()
+
+
+class RegistrationResponse(BaseModel):
+    """Registration response model"""
+    message: str
+    user_id: int
+    email: str
+    temporary_password: str
+    status: str = "pending_activation"
 
 
 class UserUpdate(BaseModel):
