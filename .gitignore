@@ -1,0 +1,468 @@
+# ============================
+# FinSolve AI Assistant - .gitignore
+# Comprehensive ignore patterns for Python, AI/ML, and enterprise projects
+# ============================
+
+# ============================
+# Python
+# ============================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+fin_env/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ============================
+# AI/ML Specific
+# ============================
+
+# Model files
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.pb
+*.pth
+*.pt
+*.onnx
+*.tflite
+*.mlmodel
+
+# Dataset files
+*.csv
+*.tsv
+*.json
+*.jsonl
+*.parquet
+*.feather
+*.xlsx
+*.xls
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Weights & Biases
+wandb/
+
+# TensorBoard logs
+logs/
+tensorboard_logs/
+
+# Hugging Face cache
+.cache/
+transformers_cache/
+
+# ============================
+# Vector Databases & AI Data
+# ============================
+
+# ChromaDB
+chroma_db/
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Pinecone
+.pinecone/
+
+# Weaviate
+weaviate_data/
+
+# FAISS indices
+*.faiss
+*.index
+
+# Embeddings cache
+embeddings_cache/
+.embeddings/
+
+# ============================
+# API Keys & Secrets
+# ============================
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# API keys
+api_keys.txt
+secrets.json
+credentials.json
+service_account.json
+
+# Configuration files with secrets
+config_local.py
+local_config.py
+private_config.py
+
+# ============================
+# Databases
+# ============================
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+
+# PostgreSQL
+*.dump
+*.sql
+
+# Database backups
+backup/
+backups/
+*.backup
+
+# ============================
+# Logs & Monitoring
+# ============================
+
+# Log files
+*.log
+logs/
+log/
+*.log.*
+
+# Monitoring data
+metrics/
+traces/
+
+# ============================
+# IDE & Editor Files
+# ============================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ============================
+# Operating System
+# ============================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================
+# Docker & Containers
+# ============================
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# ============================
+# Cloud & Deployment
+# ============================
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+
+# Azure
+.azure/
+
+# Kubernetes
+*.kubeconfig
+
+# ============================
+# Project Specific
+# ============================
+
+# Test files
+test_*.py
+*_test.py
+tests/temp/
+temp/
+tmp/
+
+# Documentation builds
+docs/build/
+docs/_build/
+
+# Static files
+static/
+media/
+
+# Upload directories
+uploads/
+user_uploads/
+
+# Cache directories
+.cache/
+cache/
+
+# Temporary directories
+temp/
+tmp/
+temporary/
+
+# Development files
+dev/
+development/
+sandbox/
+
+# ============================
+# Streamlit Specific
+# ============================
+
+# Streamlit cache
+.streamlit/
+
+# ============================
+# FastAPI Specific
+# ============================
+
+# FastAPI uploads
+uploads/
+
+# ============================
+# LangChain/LangGraph Specific
+# ============================
+
+# LangChain cache
+.langchain/
+langchain_cache/
+
+# LangSmith
+.langsmith/
+
+# ============================
+# Miscellaneous
+# ============================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Large files (should use Git LFS)
+*.bin
+*.dat
+
+# Node.js (if any frontend components)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# End of .gitignore
