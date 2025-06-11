@@ -274,10 +274,74 @@ graph TD
     style E1 fill:#FF6B35,stroke:#0D1B2A,stroke-width:3px
     style J fill:#E8F5E8
     style Q fill:#00F5D4,stroke:#0D1B2A,stroke-width:3px
+```
 
-    Note over A,Q: Structured queries: <0.3s
-    Note over A,Q: Complex analysis: <2s
-    Note over A,Q: Accuracy: 100% structured, 95%+ semantic
+### **⚡ Performance & Data Flow Architecture**
+
+```mermaid
+graph LR
+    subgraph "User Interface Layer"
+        UI[Streamlit Executive Dashboard<br/>Professional FinSolve Branding]
+        API_DOC[FastAPI Interactive Docs<br/>Real-time API Testing]
+    end
+
+    subgraph "API Gateway & Security"
+        GATEWAY[FastAPI Gateway<br/>Rate Limiting + CORS]
+        AUTH_SVC[JWT Authentication<br/>Role-Based Access Control]
+        AUDIT[Audit Logging<br/>Compliance Tracking]
+    end
+
+    subgraph "AI Processing Engine"
+        ROUTER[Intelligent Query Router<br/>MCP vs RAG Classification]
+        MCP_ENGINE[MCP Processing Engine<br/>12 Specialized Tools]
+        RAG_ENGINE[Advanced RAG Engine<br/>Multimodal Processing]
+        FUSION[Data Fusion Engine<br/>95%+ Confidence Scoring]
+    end
+
+    subgraph "Data Storage & Caching"
+        POSTGRES[(PostgreSQL<br/>Enterprise Data)]
+        REDIS[(Redis Cache<br/>Performance Layer)]
+        VECTOR[(ChromaDB<br/>Vector Embeddings)]
+        S3[(AWS S3<br/>Document Storage)]
+    end
+
+    subgraph "External AI Services"
+        EURI[EuriAI API<br/>Primary LLM]
+        OPENAI[OpenAI API<br/>Fallback LLM]
+        EMBED[EuriAI Embeddings<br/>Vector Generation]
+    end
+
+    UI --> GATEWAY
+    API_DOC --> GATEWAY
+    GATEWAY --> AUTH_SVC
+    AUTH_SVC --> AUDIT
+    AUTH_SVC --> ROUTER
+
+    ROUTER -->|Structured Queries| MCP_ENGINE
+    ROUTER -->|Document Queries| RAG_ENGINE
+    ROUTER -->|Complex Queries| FUSION
+
+    MCP_ENGINE --> POSTGRES
+    RAG_ENGINE --> VECTOR
+    RAG_ENGINE --> S3
+    FUSION --> MCP_ENGINE
+    FUSION --> RAG_ENGINE
+
+    MCP_ENGINE --> EURI
+    RAG_ENGINE --> EURI
+    MCP_ENGINE --> OPENAI
+    RAG_ENGINE --> OPENAI
+    RAG_ENGINE --> EMBED
+
+    ROUTER --> REDIS
+    MCP_ENGINE --> REDIS
+    RAG_ENGINE --> REDIS
+
+    style ROUTER fill:#FF6B35,stroke:#0D1B2A,stroke-width:3px
+    style MCP_ENGINE fill:#FF6B35,stroke:#0D1B2A,stroke-width:3px
+    style RAG_ENGINE fill:#4CAF50,stroke:#0D1B2A,stroke-width:3px
+    style FUSION fill:#FF9800,stroke:#0D1B2A,stroke-width:3px
+    style UI fill:#00F5D4,stroke:#0D1B2A,stroke-width:3px
 ```
 
 ---
@@ -493,6 +557,73 @@ module "finsolve_ai_infrastructure" {
 
 **Security Philosophy**: Implemented defense-in-depth strategy with multiple security layers, ensuring enterprise-grade protection without compromising user experience.
 
+```mermaid
+graph TB
+    subgraph "External Threats"
+        THREAT[Potential Security Threats<br/>DDoS, Injection, Unauthorized Access]
+    end
+
+    subgraph "Perimeter Defense"
+        WAF[AWS WAF<br/>DDoS Protection + Bot Filtering]
+        CF[CloudFront<br/>Global CDN + Edge Security]
+        ALB[Application Load Balancer<br/>SSL Termination + Health Checks]
+    end
+
+    subgraph "Application Security Layer"
+        AUTH[JWT Authentication<br/>Token-based Security]
+        RBAC[Role-Based Access Control<br/>Department-level Isolation]
+        RATE[Rate Limiting<br/>API Protection]
+        VALID[Input Validation<br/>SQL Injection Prevention]
+    end
+
+    subgraph "MCP Security Framework"
+        MCP_AUTH[MCP Tool Authentication<br/>Per-tool Authorization]
+        TOOL_RBAC[Tool-level RBAC<br/>Granular Permissions]
+        AUDIT_MCP[MCP Audit Trail<br/>Tool Usage Logging]
+    end
+
+    subgraph "Data Security"
+        ENCRYPT_REST[Encryption at Rest<br/>AES-256 Database]
+        ENCRYPT_TRANSIT[Encryption in Transit<br/>TLS 1.3 Everywhere]
+        KEY_MGMT[AWS Secrets Manager<br/>API Key Management]
+        DB_SEC[Database Security<br/>Connection Encryption]
+    end
+
+    subgraph "Monitoring & Response"
+        SIEM[Security Monitoring<br/>CloudWatch + Alerts]
+        AUDIT_LOG[Comprehensive Audit Logs<br/>Compliance Tracking]
+        INCIDENT[Incident Response<br/>Automated Threat Detection]
+        COMPLIANCE[Compliance Framework<br/>SOC 2 + ISO 27001]
+    end
+
+    THREAT --> WAF
+    WAF --> CF
+    CF --> ALB
+    ALB --> AUTH
+    AUTH --> RBAC
+    RBAC --> RATE
+    RATE --> VALID
+    VALID --> MCP_AUTH
+    MCP_AUTH --> TOOL_RBAC
+    TOOL_RBAC --> AUDIT_MCP
+
+    AUTH --> ENCRYPT_TRANSIT
+    RBAC --> ENCRYPT_REST
+    MCP_AUTH --> KEY_MGMT
+    TOOL_RBAC --> DB_SEC
+
+    AUDIT_MCP --> SIEM
+    ENCRYPT_REST --> AUDIT_LOG
+    KEY_MGMT --> INCIDENT
+    DB_SEC --> COMPLIANCE
+
+    style WAF fill:#FF5722,stroke:#0D1B2A,stroke-width:3px
+    style AUTH fill:#FF6B35,stroke:#0D1B2A,stroke-width:3px
+    style MCP_AUTH fill:#FF6B35,stroke:#0D1B2A,stroke-width:3px
+    style ENCRYPT_REST fill:#4CAF50,stroke:#0D1B2A,stroke-width:3px
+    style SIEM fill:#FF9800,stroke:#0D1B2A,stroke-width:3px
+```
+
 #### **🔐 Multi-Layer Security Implementation:**
 
 1. **Perimeter Security**:
@@ -591,6 +722,67 @@ module "finsolve_ai_infrastructure" {
 | **Load Tests** | Production Scenarios | Locust, K6 | 90% Automated |
 
 #### **🔄 CI/CD Pipeline Excellence**
+
+```mermaid
+graph LR
+    subgraph "Development Workflow"
+        DEV[Developer Commit<br/>Feature Branch]
+        PR[Pull Request<br/>Code Review]
+        MERGE[Merge to Main<br/>Release Trigger]
+    end
+
+    subgraph "Automated Quality Gates"
+        SECURITY[Security Scan<br/>Bandit + Trivy + Safety]
+        QUALITY[Code Quality<br/>Black + Flake8 + MyPy]
+        UNIT[Unit Tests<br/>pytest + Coverage]
+        INTEGRATION[Integration Tests<br/>API + Database]
+    end
+
+    subgraph "Performance Validation"
+        PERF[Performance Tests<br/>Locust Load Testing]
+        BENCH[Benchmark Validation<br/>Response Time SLA]
+        STRESS[Stress Testing<br/>Concurrent Users]
+    end
+
+    subgraph "Deployment Pipeline"
+        BUILD[Docker Build<br/>Multi-stage Optimization]
+        ECR[Push to ECR<br/>Container Registry]
+        TERRAFORM[Infrastructure<br/>Terraform Apply]
+        DEPLOY[AWS Deployment<br/>Blue-Green Strategy]
+    end
+
+    subgraph "Production Monitoring"
+        HEALTH[Health Checks<br/>Application Status]
+        MONITOR[CloudWatch<br/>Metrics + Alerts]
+        ROLLBACK[Automated Rollback<br/>Failure Detection]
+        NOTIFY[Slack Notifications<br/>Deployment Status]
+    end
+
+    DEV --> PR
+    PR --> MERGE
+    MERGE --> SECURITY
+    SECURITY --> QUALITY
+    QUALITY --> UNIT
+    UNIT --> INTEGRATION
+    INTEGRATION --> PERF
+    PERF --> BENCH
+    BENCH --> STRESS
+    STRESS --> BUILD
+    BUILD --> ECR
+    ECR --> TERRAFORM
+    TERRAFORM --> DEPLOY
+    DEPLOY --> HEALTH
+    HEALTH --> MONITOR
+    MONITOR --> ROLLBACK
+    ROLLBACK --> NOTIFY
+
+    style SECURITY fill:#FF5722,stroke:#0D1B2A,stroke-width:3px
+    style QUALITY fill:#FF6B35,stroke:#0D1B2A,stroke-width:3px
+    style DEPLOY fill:#4CAF50,stroke:#0D1B2A,stroke-width:3px
+    style MONITOR fill:#FF9800,stroke:#0D1B2A,stroke-width:3px
+```
+
+#### **📋 Automated Pipeline Configuration**
 
 ```yaml
 # GitHub Actions workflow demonstrating DevOps leadership
@@ -830,22 +1022,192 @@ The platform includes comprehensive monitoring and analytics capabilities design
 
 ---
 
+## 🚀 **Quick Deployment Guide**
+
+### **🎯 Local Development Setup**
+
+```bash
+# Clone repository
+git clone https://github.com/erickyegon/finsolve-rag-rbac-assistant.git
+cd finsolve-rag-rbac-assistant
+
+# Create virtual environment
+python -m venv fin_env
+source fin_env/bin/activate  # On Windows: fin_env\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Run the application
+python main.py
+```
+
+### **🐳 Docker Deployment**
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Access the application
+# Streamlit UI: http://localhost:8501
+# FastAPI Docs: http://localhost:8000/docs
+```
+
+### **☁️ AWS Production Deployment**
+
+For complete AWS production deployment with enterprise infrastructure:
+
+**📋 [Complete AWS Deployment Guide](AWS_DEPLOYMENT_GUIDE.md)**
+
+**Key Features:**
+- **High Availability**: Multi-AZ deployment with auto-scaling
+- **Security**: VPC, Security Groups, WAF protection
+- **Performance**: CloudFront CDN, ElastiCache Redis
+- **Monitoring**: CloudWatch metrics, logs, and alarms
+- **Cost Optimization**: Detailed cost analysis and optimization strategies
+
+**Estimated Monthly Cost**: $1,125-1,625 for enterprise scale
+
+---
+
+## 🔌 **API Endpoints & Integration**
+
+### **🎯 FastAPI Interactive Documentation**
+
+**Local Development Access**: When running the application locally, comprehensive interactive API documentation is available at:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+- **OpenAPI Schema**: `http://localhost:8000/openapi.json`
+
+### **📋 Core API Endpoints**
+
+#### **🔐 Authentication Endpoints**
+```http
+POST /auth/login
+POST /auth/refresh
+POST /auth/logout
+GET  /auth/me
+```
+
+#### **💬 Chat & Query Processing**
+```http
+POST /chat/query          # Main chat endpoint
+GET  /chat/history        # Chat history retrieval
+POST /chat/feedback       # User feedback submission
+```
+
+#### **👥 User Management (Admin)**
+```http
+GET    /admin/users       # List all users
+POST   /admin/users       # Create new user
+PUT    /admin/users/{id}  # Update user
+DELETE /admin/users/{id}  # Delete user
+```
+
+#### **📊 Analytics & Reporting**
+```http
+GET /analytics/dashboard  # Executive dashboard data
+GET /analytics/metrics    # System performance metrics
+GET /analytics/usage      # Usage statistics
+```
+
+#### **🛠️ MCP Tool Endpoints**
+```http
+GET  /mcp/tools          # Available MCP tools
+POST /mcp/execute        # Execute MCP tool
+GET  /mcp/status         # MCP server status
+```
+
+### **📝 API Usage Examples**
+
+#### **Authentication Flow**
+```python
+import requests
+
+# Login
+response = requests.post("http://localhost:8000/auth/login", json={
+    "username": "ceo.finsolve",
+    "password": "CEO123!"
+})
+token = response.json()["access_token"]
+
+# Use token for authenticated requests
+headers = {"Authorization": f"Bearer {token}"}
+```
+
+#### **Chat Query Example**
+```python
+# Send query to AI assistant
+response = requests.post(
+    "http://localhost:8000/chat/query",
+    headers=headers,
+    json={
+        "message": "Show me quarterly financial performance",
+        "user_id": "user123",
+        "session_id": "session456"
+    }
+)
+result = response.json()
+```
+
+#### **Executive Dashboard Data**
+```python
+# Get dashboard data
+response = requests.get(
+    "http://localhost:8000/analytics/dashboard",
+    headers=headers,
+    params={"department": "all", "period": "quarterly"}
+)
+dashboard_data = response.json()
+```
+
+---
+
 ## 🤝 **Collaboration & Knowledge Sharing**
 
 ### **📚 Technical Documentation & Knowledge Transfer**
 
 #### **🎯 Comprehensive Documentation Suite:**
-- **[Architecture Decision Records](docs/adr/)**: Technical decision rationale and trade-offs
-- **[API Documentation](http://localhost:8000/docs)**: Interactive OpenAPI documentation
-- **[Deployment Guides](docs/deployment/)**: Step-by-step deployment instructions
-- **[Security Framework](docs/security/)**: Detailed security implementation guide
-- **[Performance Optimization](docs/performance/)**: Optimization strategies and benchmarks
+- **[Architecture Decision Records](#-advanced-mcp-implementation--technical-leadership)**: Technical decision rationale and trade-offs
+- **[API Documentation](#-api-endpoints--integration)**: Interactive OpenAPI documentation and endpoint details
+- **[AWS Deployment Guide](AWS_DEPLOYMENT_GUIDE.md)**: Complete AWS production deployment instructions
+- **[MCP Implementation Guide](MCP_IMPLEMENTATION_SUMMARY.md)**: Model Context Protocol integration details
+- **[Security Framework](#-enterprise-security--compliance-leadership)**: Detailed security implementation guide
+- **[Performance Optimization](#-performance-engineering--optimization)**: Optimization strategies and benchmarks
+- **[Role & Security Updates](ROLE_SECURITY_UPDATE.md)**: Enhanced RBAC implementation details
 
-#### **🔧 Open Source Contributions:**
-- **MCP Integration Examples**: Reusable patterns for enterprise MCP implementation
-- **Security Best Practices**: Enterprise AI security framework templates
-- **Performance Optimization**: Scalable AI architecture patterns
-- **Monitoring Solutions**: Comprehensive observability implementation
+#### **📋 Complete Documentation Navigation:**
+
+| **📚 Documentation Category** | **📍 Location** | **📝 Description** |
+|-------------------------------|-----------------|-------------------|
+| **🏗️ System Architecture** | [High-Level Architecture](#-high-level-architecture) | Complete system overview and component relationships |
+| **🎯 Innovation Breakthrough** | [MCP + RAG Hybrid](#-innovation-breakthrough-mcp--rag-hybrid-processing) | Core innovation and processing workflow |
+| **⚡ Performance & Data Flow** | [Performance Architecture](#-performance--data-flow-architecture) | Technical data flow and optimization |
+| **☁️ Cloud Infrastructure** | [AWS Architecture](#️-enterprise-aws-architecture-strategy) | Production cloud infrastructure design |
+| **🔒 Security Framework** | [Zero-Trust Security](#️-zero-trust-security-architecture) | Comprehensive security implementation |
+| **🔄 DevOps Pipeline** | [CI/CD Excellence](#-cicd-pipeline-excellence) | Automated deployment and testing |
+| **🚀 Quick Deployment** | [Deployment Guide](#-quick-deployment-guide) | Local and Docker setup instructions |
+| **🔌 API Integration** | [API Endpoints](#-api-endpoints--integration) | Complete API documentation and examples |
+
+#### **📄 External Documentation Files:**
+
+| **📋 Document** | **🔗 Link** | **📖 Content Overview** |
+|-----------------|-------------|-------------------------|
+| **AWS Deployment Guide** | [AWS_DEPLOYMENT_GUIDE.md](AWS_DEPLOYMENT_GUIDE.md) | Complete AWS production deployment with infrastructure setup |
+| **MCP Implementation** | [MCP_IMPLEMENTATION_SUMMARY.md](MCP_IMPLEMENTATION_SUMMARY.md) | Model Context Protocol integration details and architecture |
+| **Role & Security Updates** | [ROLE_SECURITY_UPDATE.md](ROLE_SECURITY_UPDATE.md) | Enhanced RBAC with CEO and System Admin roles |
+| **Architectural Diagrams** | [ARCHITECTURAL_DIAGRAMS_SUMMARY.md](ARCHITECTURAL_DIAGRAMS_SUMMARY.md) | Complete diagram suite analysis and overview |
+
+#### **🔧 Technical Implementation Examples:**
+- **[MCP Server Implementation](#-real-time-structured-data-access)**: Production-ready MCP server code examples
+- **[Query Classification Logic](#-intelligent-query-classification)**: AI-powered routing implementation
+- **[Confidence Scoring Algorithm](#-enterprise-confidence-scoring)**: Real-time accuracy assessment code
+- **[Infrastructure as Code](#-infrastructure-as-code-leadership)**: Terraform configuration examples
+- **[Security Implementation](#-multi-layer-security-implementation)**: Enterprise security code patterns
 
 ### **💡 Mentorship & Knowledge Sharing Opportunities**
 
