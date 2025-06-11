@@ -29,6 +29,8 @@ from ..auth.models import User
 from ..tools.numerical_analyzer import numerical_analyzer
 from ..tools.data_fusion import data_fusion_engine
 from ..visualization.chart_generator import chart_generator
+from ..mcp.tools.mcp_tools import mcp_tool_registry
+from ..mcp.client.mcp_client import mcp_client
 
 
 class QueryType(Enum):
@@ -217,43 +219,107 @@ class FinSolveAgent:
         try:
             user_role = UserRole(state["user"]["role"])
             query = state["query"]
-            
-            # Determine which data source to query
-            if "employee" in query.lower() or "hr" in query.lower():
-                result = data_processor.query_csv_data(
-                    user_role=user_role,
-                    file_key="hr_hr_data",
-                    query_params=self._extract_query_params(query)
+            user_dept = state["user"].get("department", "General")
+
+            # Use MCP client for intelligent query routing
+            import asyncio
+
+            # Create event loop if none exists
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            # Query MCP servers with context
+            mcp_result = loop.run_until_complete(
+                mcp_client.query_with_context(
+                    query=query,
+                    user_role=user_role.value,
+                    department=user_dept
                 )
-            elif "financial" in query.lower() or "revenue" in query.lower():
-                # Search for financial data in text format
-                result = data_processor.search_text_content(
-                    user_role=user_role,
-                    search_query=query,
-                    department_filter="finance"
-                )
+            )
+
+            # Process MCP results
+            if mcp_result and "results" in mcp_result:
+                structured_data = {}
+                sources = []
+                processing_time = 0
+
+                for tool_result in mcp_result["results"]:
+                    if "result" in tool_result:
+                        try:
+                            # Parse JSON result if it's a string
+                            if isinstance(tool_result["result"], str):
+                                parsed_result = json.loads(tool_result["result"])
+                            else:
+                                parsed_result = tool_result["result"]
+
+                            # Extract structured data
+                            if not parsed_result.get("error"):
+                                structured_data.update(parsed_result)
+                                sources.append(tool_result.get("tool_name", "MCP Tool"))
+
+                        except json.JSONDecodeError:
+                            # Handle non-JSON results
+                            structured_data["raw_result"] = tool_result["result"]
+                            sources.append(tool_result.get("tool_name", "MCP Tool"))
+
+                state["structured_results"] = {
+                    "success": True,
+                    "data": structured_data,
+                    "metadata": {
+                        "mcp_used": True,
+                        "tools_called": len(mcp_result["results"]),
+                        "sources": sources,
+                        "query_timestamp": mcp_result.get("timestamp")
+                    },
+                    "source_files": sources,
+                    "processing_time": processing_time,
+                    "error": None
+                }
+
+                logger.info(f"MCP structured data processing completed: {len(mcp_result['results'])} tools called")
+
             else:
-                # General structured data search
-                result = data_processor.search_text_content(
-                    user_role=user_role,
-                    search_query=query
-                )
-            
-            state["structured_results"] = {
-                "success": result.success,
-                "data": result.data,
-                "metadata": result.metadata,
-                "source_files": result.source_files,
-                "processing_time": result.processing_time,
-                "error": result.error
-            }
-            
-            logger.info(f"Structured data processing completed: {result.success}")
-            
+                # Fallback to original data processor if MCP fails
+                logger.warning("MCP query failed, falling back to original data processor")
+
+                if "employee" in query.lower() or "hr" in query.lower():
+                    result = data_processor.query_csv_data(
+                        user_role=user_role,
+                        file_key="hr_hr_data",
+                        query_params=self._extract_query_params(query)
+                    )
+                elif "financial" in query.lower() or "revenue" in query.lower():
+                    result = data_processor.search_text_content(
+                        user_role=user_role,
+                        search_query=query,
+                        department_filter="finance"
+                    )
+                else:
+                    result = data_processor.search_text_content(
+                        user_role=user_role,
+                        search_query=query
+                    )
+
+                state["structured_results"] = {
+                    "success": result.success,
+                    "data": result.data,
+                    "metadata": {
+                        **result.metadata,
+                        "mcp_used": False,
+                        "fallback_used": True
+                    },
+                    "source_files": result.source_files,
+                    "processing_time": result.processing_time,
+                    "error": result.error
+                }
+
         except Exception as e:
             logger.error(f"Structured data processing failed: {str(e)}")
             state["error"] = f"Structured processing error: {str(e)}"
-        
+
         return state
     
     def _process_documents_node(self, state: AgentState) -> AgentState:

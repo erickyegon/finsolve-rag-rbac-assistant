@@ -87,7 +87,8 @@ FINSOLVE_BRAND = {
 
 # Role Configuration
 ROLE_CONFIG = {
-    "c_level": {"icon": "👑", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 1},
+    "ceo": {"icon": "👑", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 1},
+    "system_admin": {"icon": "🔧", "color": FINSOLVE_BRAND["colors"]["deep_blue"], "priority": 1},
     "hr": {"icon": "👥", "color": FINSOLVE_BRAND["colors"]["deep_blue"], "priority": 2},
     "finance": {"icon": "💰", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 2},
     "marketing": {"icon": "📈", "color": FINSOLVE_BRAND["colors"]["grey"], "priority": 3},
@@ -899,9 +900,10 @@ class FinSolveAIAssistant:
         st.markdown("*Choose your role for instant access*")
 
         demo_users = [
-            {"username": "admin", "password": "Admin123!", "role": "C-Level Executive", "icon": "👑"},
+            {"username": "ceo.finsolve", "password": "CEO123!", "role": "Chief Executive Officer", "icon": "👑"},
+            {"username": "admin", "password": "Admin123!", "role": "System Administrator", "icon": "🔧"},
             {"username": "peter.pandey", "password": "Engineering123!", "role": "AI Engineer", "icon": "⚙️"},
-            {"username": "jane.smith", "password": "HRpass123!", "role": "HR Manager", "icon": "👥"},
+            {"username": "jane.smith", "password": "HR123!", "role": "HR Manager", "icon": "👥"},
             {"username": "mike.johnson", "password": "Finance123!", "role": "Finance Analyst", "icon": "💰"},
             {"username": "sarah.wilson", "password": "Marketing123!", "role": "Marketing Manager", "icon": "📈"},
             {"username": "john.doe", "password": "Employee123!", "role": "Employee", "icon": "👤"}
@@ -1507,6 +1509,72 @@ class FinSolveAIAssistant:
 
             st.plotly_chart(fig_top, use_container_width=True)
 
+    def display_role_specific_tab(self, tab_type: str, user_role: str):
+        """Display role-specific tabs with proper access control"""
+
+        # Verify user has access to this tab type
+        if not self.verify_tab_access(tab_type, user_role):
+            st.error("🚫 Access Denied: You don't have permission to view this information.")
+            st.info("💡 For access to this information, please contact your supervisor or the relevant department.")
+            return
+
+        # Route to appropriate tab display method
+        if tab_type == "employee_overview":
+            self.display_employee_overview_tab()
+        elif tab_type == "performance_data":
+            self.display_performance_data_tab()
+        elif tab_type == "training_status":
+            self.display_training_status_tab()
+        elif tab_type == "hr_policies":
+            self.display_hr_policies_tab()
+        elif tab_type == "leave_application":
+            self.display_leave_application_tab()
+        elif tab_type == "revenue_analysis":
+            self.display_revenue_analysis_tab()
+        elif tab_type == "expense_report":
+            self.display_expense_report_tab()
+        elif tab_type == "budget_status":
+            self.display_budget_status_tab()
+        elif tab_type == "financial_trends":
+            self.display_financial_trends_tab()
+        elif tab_type == "campaign_analytics":
+            self.display_campaign_analytics_tab()
+        elif tab_type == "market_research":
+            self.display_market_research_tab()
+        elif tab_type == "customer_insights":
+            self.display_customer_insights_tab()
+        elif tab_type == "marketing_policies":
+            self.display_marketing_policies_tab()
+        elif tab_type == "system_architecture":
+            self.display_system_architecture_tab()
+        elif tab_type == "technical_docs":
+            self.display_technical_docs_tab()
+        elif tab_type == "development_process":
+            self.display_development_process_tab()
+        elif tab_type == "security_protocols":
+            self.display_security_protocols_tab()
+        else:
+            st.error("🚫 Unknown tab type requested.")
+
+    def verify_tab_access(self, tab_type: str, user_role: str) -> bool:
+        """Verify if user role has access to specific tab"""
+
+        # Define access control matrix
+        access_matrix = {
+            "employee": ["leave_application"],  # Employees can access leave application
+            "hr": ["employee_overview", "performance_data", "training_status", "hr_policies", "leave_application"],
+            "finance": ["revenue_analysis", "expense_report", "budget_status", "financial_trends"],
+            "marketing": ["campaign_analytics", "market_research", "customer_insights", "marketing_policies"],
+            "engineering": ["system_architecture", "technical_docs", "development_process", "security_protocols"],
+            "c_level": ["employee_overview", "performance_data", "training_status", "hr_policies", "leave_application",
+                       "revenue_analysis", "expense_report", "budget_status", "financial_trends",
+                       "campaign_analytics", "market_research", "customer_insights", "marketing_policies",
+                       "system_architecture", "technical_docs", "development_process", "security_protocols"]
+        }
+
+        allowed_tabs = access_matrix.get(user_role.lower(), [])
+        return tab_type in allowed_tabs
+
     def display_general_dashboard(self):
         """Display general company dashboard"""
         st.markdown("## 🏢 Company Overview Dashboard")
@@ -1805,6 +1873,1590 @@ keyegon@gmail.com
             logger.error(f"Failed to send inquiry email: {str(e)}")
             return False
 
+    # HR-specific tab methods
+    def display_employee_overview_tab(self):
+        """Display employee overview with real data from vector database"""
+        st.markdown("## 👥 Employee Overview")
+
+        # Query vector database for employee information
+        user_role = st.session_state.user_info.get('role', 'hr')
+
+        # Get employee count and department information
+        employee_query = "How many employees do we have by department? Show me employee statistics and department breakdown."
+        employee_info = self.query_vector_database(employee_query, user_role, "HR")
+
+        # Display the information from vector database
+        st.markdown("### 📊 Employee Information from Company Database")
+        st.markdown(employee_info)
+
+        # Try to get structured data for visualization
+        try:
+            # Query for specific employee data
+            dept_query = "Show me the employee count by department with their roles and salary information"
+            dept_response = self.query_vector_database(dept_query, user_role, "HR")
+
+            # Display department information
+            st.markdown("### 📈 Department Analysis")
+            st.markdown(dept_response)
+
+            # If we have CSV data available, try to load and display it
+            try:
+                import pandas as pd
+                # Try to load the actual HR data CSV
+                hr_data_path = "data/hr/hr_data.csv"
+                if Path(hr_data_path).exists():
+                    df = pd.read_csv(hr_data_path)
+
+                    # Calculate department statistics
+                    dept_stats = df['department'].value_counts().reset_index()
+                    dept_stats.columns = ['Department', 'Employee_Count']
+
+                    # Calculate average salary by department
+                    avg_salary = df.groupby('department')['salary'].mean().reset_index()
+                    avg_salary['avg_salary_formatted'] = avg_salary['salary'].apply(lambda x: f"₹{x:,.0f}")
+
+                    # Merge the data
+                    dept_summary = dept_stats.merge(avg_salary[['department', 'avg_salary_formatted']],
+                                                  left_on='Department', right_on='department', how='left')
+
+                    # Display metrics
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    with col1:
+                        st.metric("Total Employees", len(df), delta=f"{len(df.dropna())} active")
+                    with col2:
+                        st.metric("Departments", len(dept_stats), delta="Active")
+                    with col3:
+                        avg_performance = df['performance_rating'].mean()
+                        st.metric("Avg Performance", f"{avg_performance:.1f}/5", delta="Company average")
+                    with col4:
+                        avg_attendance = df['attendance_pct'].mean()
+                        st.metric("Avg Attendance", f"{avg_attendance:.1f}%", delta="Company average")
+
+                    # Display department breakdown table
+                    st.markdown("### 📊 Department Breakdown (Real Data)")
+                    st.dataframe(
+                        dept_summary[['Department', 'Employee_Count', 'avg_salary_formatted']],
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            "Department": st.column_config.TextColumn("Department", width="medium"),
+                            "Employee_Count": st.column_config.NumberColumn("Employees", width="small"),
+                            "avg_salary_formatted": st.column_config.TextColumn("Avg Salary", width="medium")
+                        }
+                    )
+
+                    # Create visualization
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        fig_bar = go.Figure(data=[go.Bar(
+                            x=dept_stats['Department'],
+                            y=dept_stats['Employee_Count'],
+                            marker_color='#00F5D4',
+                            text=dept_stats['Employee_Count'],
+                            textposition='auto'
+                        )])
+
+                        fig_bar.update_layout(
+                            title='Employee Count by Department (Real Data)',
+                            xaxis_title='Department',
+                            yaxis_title='Number of Employees',
+                            height=400,
+                            font=dict(family="Roboto", size=10),
+                            title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+                        )
+                        fig_bar.update_xaxes(tickangle=45)
+                        st.plotly_chart(fig_bar, use_container_width=True)
+
+                    with col2:
+                        fig_pie = go.Figure(data=[go.Pie(
+                            labels=dept_stats['Department'],
+                            values=dept_stats['Employee_Count'],
+                            hole=0.4,
+                            marker_colors=['#0D1B2A', '#00F5D4', '#4CAF50', '#FF9800', '#9C27B0', '#2196F3'] * 3
+                        )])
+
+                        fig_pie.update_layout(
+                            title='Employee Distribution (Real Data)',
+                            height=400,
+                            font=dict(family="Roboto", size=12),
+                            title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+                        )
+                        st.plotly_chart(fig_pie, use_container_width=True)
+
+                else:
+                    st.warning("📁 HR data file not found. Displaying information from vector database only.")
+
+            except Exception as e:
+                st.warning(f"⚠️ Could not load detailed employee data: {str(e)}")
+                logger.error(f"Error loading HR data: {str(e)}")
+
+        except Exception as e:
+            st.error(f"❌ Error retrieving employee information: {str(e)}")
+            logger.error(f"Error in employee overview: {str(e)}")
+
+    def display_performance_data_tab(self):
+        """Display performance data with best and improvement tracking"""
+        st.markdown("## 📈 Performance Data")
+
+        # Performance metrics
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric("Avg Performance", "4.2/5", delta="+0.3 vs last quarter")
+        with col2:
+            st.metric("Top Performers", "12", delta="Exceeding expectations")
+        with col3:
+            st.metric("Improvement Plans", "8", delta="Active coaching")
+        with col4:
+            st.metric("Performance Reviews", "57/57", delta="100% completed")
+
+        # Best performing employees table
+        st.markdown("### 🏆 Top Performing Employees")
+
+        top_performers_data = {
+            'Employee': ['Sarah Chen', 'Michael Rodriguez', 'Emily Johnson', 'David Kim', 'Lisa Wang'],
+            'Department': ['Engineering', 'Sales', 'Marketing', 'Finance', 'Data Analytics'],
+            'Performance Score': [4.9, 4.8, 4.7, 4.6, 4.6],
+            'Key Achievement': [
+                'Led AI integration project',
+                'Exceeded sales targets by 150%',
+                'Launched successful campaign',
+                'Optimized financial processes',
+                'Improved data accuracy by 25%'
+            ],
+            'Recognition': ['Employee of the Month', 'Sales Champion', 'Innovation Award', 'Process Excellence', 'Data Quality Award']
+        }
+
+        import pandas as pd
+        top_df = pd.DataFrame(top_performers_data)
+
+        st.dataframe(
+            top_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Employee": st.column_config.TextColumn("Employee", width="medium"),
+                "Department": st.column_config.TextColumn("Department", width="medium"),
+                "Performance Score": st.column_config.NumberColumn("Score", width="small", format="%.1f"),
+                "Key Achievement": st.column_config.TextColumn("Key Achievement", width="large"),
+                "Recognition": st.column_config.TextColumn("Recognition", width="medium")
+            }
+        )
+
+        # Employees needing support
+        st.markdown("### 🎯 Performance Improvement Tracking")
+
+        improvement_data = {
+            'Employee': ['John Smith', 'Maria Garcia', 'Robert Brown', 'Jennifer Lee'],
+            'Department': ['Customer Support', 'Operations', 'QA', 'HR'],
+            'Current Score': [3.2, 3.0, 3.1, 3.3],
+            'Target Score': [4.0, 4.0, 4.0, 4.0],
+            'Improvement Plan': [
+                'Customer service training',
+                'Process optimization coaching',
+                'Quality assurance certification',
+                'Leadership development program'
+            ],
+            'Coach': ['Sarah Wilson', 'Mike Johnson', 'Emily Chen', 'Lisa Rodriguez'],
+            'Next Review': ['2024-02-15', '2024-02-20', '2024-02-18', '2024-02-22']
+        }
+
+        improvement_df = pd.DataFrame(improvement_data)
+
+        st.dataframe(
+            improvement_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Employee": st.column_config.TextColumn("Employee", width="medium"),
+                "Department": st.column_config.TextColumn("Department", width="medium"),
+                "Current Score": st.column_config.NumberColumn("Current", width="small", format="%.1f"),
+                "Target Score": st.column_config.NumberColumn("Target", width="small", format="%.1f"),
+                "Improvement Plan": st.column_config.TextColumn("Improvement Plan", width="large"),
+                "Coach": st.column_config.TextColumn("Coach", width="medium"),
+                "Next Review": st.column_config.DateColumn("Next Review", width="medium")
+            }
+        )
+
+    def display_training_status_tab(self):
+        """Display training status with real data from vector database"""
+        st.markdown("## 🎓 Training Status")
+
+        # Query vector database for training information
+        user_role = st.session_state.user_info.get('role', 'hr')
+
+        # Get training information from vector database
+        training_query = "Show me training programs, employee training status, skill development initiatives, and training completion rates for FinSolve Technologies"
+        training_info = self.query_vector_database(training_query, user_role, "HR")
+
+        # Display the information from vector database
+        st.markdown("### 📚 Training Programs from Company Database")
+        st.markdown(training_info)
+
+        # Get specific training metrics
+        metrics_query = "What are the training completion rates, ongoing training programs, and professional development opportunities available?"
+        metrics_info = self.query_vector_database(metrics_query, user_role, "HR")
+
+        st.markdown("### 📊 Training Metrics and Progress")
+        st.markdown(metrics_info)
+
+        # Training completion chart
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Training completion by department
+            training_data = {
+                'Department': ['Engineering', 'Sales', 'Marketing', 'Finance', 'HR', 'Customer Support'],
+                'Completed': [95, 82, 88, 91, 100, 78],
+                'In Progress': [5, 15, 10, 7, 0, 18],
+                'Not Started': [0, 3, 2, 2, 0, 4]
+            }
+
+            training_df = pd.DataFrame(training_data)
+
+            fig_training = go.Figure()
+
+            fig_training.add_trace(go.Bar(
+                name='Completed',
+                x=training_df['Department'],
+                y=training_df['Completed'],
+                marker_color='#4CAF50'
+            ))
+
+            fig_training.add_trace(go.Bar(
+                name='In Progress',
+                x=training_df['Department'],
+                y=training_df['In Progress'],
+                marker_color='#FF9800'
+            ))
+
+            fig_training.add_trace(go.Bar(
+                name='Not Started',
+                x=training_df['Department'],
+                y=training_df['Not Started'],
+                marker_color='#F44336'
+            ))
+
+            fig_training.update_layout(
+                title='Training Completion Status by Department',
+                xaxis_title='Department',
+                yaxis_title='Percentage (%)',
+                barmode='stack',
+                height=400,
+                font=dict(family="Roboto", size=12),
+                title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+            )
+
+            st.plotly_chart(fig_training, use_container_width=True)
+
+        with col2:
+            # Training types pie chart
+            training_types = {
+                'Type': ['Technical Skills', 'Soft Skills', 'Compliance', 'Leadership', 'Safety', 'Product Knowledge'],
+                'Count': [25, 18, 12, 8, 15, 22]
+            }
+
+            fig_pie = go.Figure(data=[go.Pie(
+                labels=training_types['Type'],
+                values=training_types['Count'],
+                hole=0.4,
+                marker_colors=['#0D1B2A', '#00F5D4', '#4CAF50', '#FF9800', '#9C27B0', '#2196F3']
+            )])
+
+            fig_pie.update_layout(
+                title='Training Programs by Type',
+                height=400,
+                font=dict(family="Roboto", size=12),
+                title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+            )
+
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+        # Detailed training information
+        st.markdown("### 📚 Current Training Programs")
+
+        training_programs = {
+            'Program': ['AI & Machine Learning', 'Leadership Development', 'Cybersecurity Awareness',
+                       'Customer Service Excellence', 'Financial Analysis', 'Project Management'],
+            'Duration': ['40 hours', '32 hours', '16 hours', '24 hours', '28 hours', '36 hours'],
+            'Enrolled': [23, 15, 57, 18, 12, 20],
+            'Completed': [18, 12, 52, 16, 10, 17],
+            'Completion Rate': ['78%', '80%', '91%', '89%', '83%', '85%'],
+            'Next Session': ['2024-02-20', '2024-02-25', '2024-02-15', '2024-02-28', '2024-03-05', '2024-02-22']
+        }
+
+        programs_df = pd.DataFrame(training_programs)
+
+        st.dataframe(
+            programs_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Program": st.column_config.TextColumn("Training Program", width="large"),
+                "Duration": st.column_config.TextColumn("Duration", width="small"),
+                "Enrolled": st.column_config.NumberColumn("Enrolled", width="small"),
+                "Completed": st.column_config.NumberColumn("Completed", width="small"),
+                "Completion Rate": st.column_config.TextColumn("Rate", width="small"),
+                "Next Session": st.column_config.DateColumn("Next Session", width="medium")
+            }
+        )
+
+    def display_hr_policies_tab(self):
+        """Display HR policies with real data from vector database"""
+        st.markdown("## 📋 HR Policies")
+
+        # Query vector database for HR policies
+        user_role = st.session_state.user_info.get('role', 'hr')
+
+        # Get HR policies from vector database
+        policies_query = "Show me all HR policies, leave policies, employee benefits, work hours, attendance policies, and code of conduct for FinSolve Technologies"
+        policies_info = self.query_vector_database(policies_query, user_role, "HR")
+
+        # Display the information from vector database
+        st.markdown("### 📚 HR Policies from Company Handbook")
+        st.markdown(policies_info)
+
+        # Get specific leave policies since that's what employees often ask about
+        leave_query = "What are the detailed leave policies including types of leave, entitlements, application process, and leave balances?"
+        leave_info = self.query_vector_database(leave_query, user_role, "HR")
+
+        st.markdown("### 🏖️ Leave Policies (Detailed)")
+        st.markdown(leave_info)
+
+        # Get employee benefits information
+        benefits_query = "What are the employee benefits, statutory benefits, company benefits, and wellness programs available?"
+        benefits_info = self.query_vector_database(benefits_query, user_role, "HR")
+
+        st.markdown("### 🎁 Employee Benefits")
+        st.markdown(benefits_info)
+
+        # HR Policies table with management information
+        st.markdown("### 📊 Policy Management Overview")
+
+        policies_data = {
+            'Policy Name': [
+                'Employee Handbook',
+                'Code of Conduct',
+                'Anti-Harassment Policy',
+                'Remote Work Policy',
+                'Leave and Vacation Policy',
+                'Performance Management',
+                'Compensation and Benefits',
+                'Health and Safety',
+                'Data Privacy Policy',
+                'Professional Development',
+                'Disciplinary Procedures',
+                'Equal Opportunity Policy'
+            ],
+            'Developed': [
+                '2020-01-15',
+                '2020-02-01',
+                '2020-03-10',
+                '2021-03-15',
+                '2020-01-20',
+                '2020-04-01',
+                '2020-05-15',
+                '2020-06-01',
+                '2021-05-25',
+                '2020-07-10',
+                '2020-08-15',
+                '2020-01-15'
+            ],
+            'Last Updated': [
+                '2024-01-15',
+                '2023-11-20',
+                '2023-12-05',
+                '2024-01-10',
+                '2023-10-15',
+                '2023-09-20',
+                '2024-01-01',
+                '2023-12-15',
+                '2024-01-20',
+                '2023-11-10',
+                '2023-08-25',
+                '2023-12-01'
+            ],
+            'Next Review': [
+                '2025-01-15',
+                '2024-11-20',
+                '2024-12-05',
+                '2025-01-10',
+                '2024-10-15',
+                '2024-09-20',
+                '2025-01-01',
+                '2024-12-15',
+                '2025-01-20',
+                '2024-11-10',
+                '2024-08-25',
+                '2024-12-01'
+            ],
+            'Responsible': [
+                'HR Director',
+                'Chief Compliance Officer',
+                'HR Director',
+                'HR Director',
+                'HR Manager',
+                'HR Director',
+                'Compensation Manager',
+                'Safety Officer',
+                'Data Protection Officer',
+                'Learning & Development',
+                'HR Director',
+                'Chief Compliance Officer'
+            ],
+            'Status': [
+                'Current',
+                'Review Due',
+                'Current',
+                'Current',
+                'Review Due',
+                'Current',
+                'Current',
+                'Current',
+                'Current',
+                'Current',
+                'Review Due',
+                'Current'
+            ]
+        }
+
+        policies_df = pd.DataFrame(policies_data)
+
+        st.dataframe(
+            policies_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Policy Name": st.column_config.TextColumn("Policy Name", width="large"),
+                "Developed": st.column_config.DateColumn("Developed", width="medium"),
+                "Last Updated": st.column_config.DateColumn("Last Updated", width="medium"),
+                "Next Review": st.column_config.DateColumn("Next Review", width="medium"),
+                "Responsible": st.column_config.TextColumn("Responsible", width="medium"),
+                "Status": st.column_config.TextColumn("Status", width="small")
+            }
+        )
+
+        # Policy compliance chart
+        st.markdown("### 📈 Policy Compliance Trends")
+
+        compliance_data = {
+            'Month': ['Oct 2023', 'Nov 2023', 'Dec 2023', 'Jan 2024', 'Feb 2024'],
+            'Acknowledgment Rate': [94, 95, 96, 97, 96],
+            'Training Completion': [88, 90, 92, 94, 95],
+            'Compliance Score': [91, 92, 94, 95, 96]
+        }
+
+        fig_compliance = go.Figure()
+
+        fig_compliance.add_trace(go.Scatter(
+            x=compliance_data['Month'],
+            y=compliance_data['Acknowledgment Rate'],
+            mode='lines+markers',
+            name='Acknowledgment Rate',
+            line=dict(color='#00F5D4', width=3),
+            marker=dict(size=8)
+        ))
+
+        fig_compliance.add_trace(go.Scatter(
+            x=compliance_data['Month'],
+            y=compliance_data['Training Completion'],
+            mode='lines+markers',
+            name='Training Completion',
+            line=dict(color='#4CAF50', width=3),
+            marker=dict(size=8)
+        ))
+
+        fig_compliance.add_trace(go.Scatter(
+            x=compliance_data['Month'],
+            y=compliance_data['Compliance Score'],
+            mode='lines+markers',
+            name='Overall Compliance',
+            line=dict(color='#0D1B2A', width=3),
+            marker=dict(size=8)
+        ))
+
+        fig_compliance.update_layout(
+            title='Policy Compliance Trends',
+            xaxis_title='Month',
+            yaxis_title='Percentage (%)',
+            height=400,
+            font=dict(family="Roboto", size=12),
+            title_font=dict(family="Poppins", size=16, color='#0D1B2A'),
+            yaxis=dict(range=[80, 100])
+        )
+
+        st.plotly_chart(fig_compliance, use_container_width=True)
+
+    def display_leave_application_tab(self):
+        """Display leave application form with real policy data"""
+        st.markdown("## 📝 Leave Application")
+
+        # Query vector database for leave policies first
+        user_role = st.session_state.user_info.get('role', 'employee')
+
+        # Get leave policies from vector database
+        leave_policy_query = "What are the leave policies, types of leave available, leave entitlements, and leave application process for employees?"
+        leave_policies = self.query_vector_database(leave_policy_query, user_role, "HR")
+
+        # Display leave policies
+        st.markdown("### 📚 Leave Policies (From Company Handbook)")
+        st.markdown(leave_policies)
+
+        # Get specific leave entitlements
+        entitlement_query = "How many days of annual leave, sick leave, and other types of leave are employees entitled to?"
+        entitlements = self.query_vector_database(entitlement_query, user_role, "HR")
+
+        st.markdown("### 🏖️ Your Leave Entitlements")
+        st.markdown(entitlements)
+
+        # Leave application form
+        st.markdown("### 📋 Submit Leave Request")
+
+        with st.form("leave_application_form"):
+            col1, col2 = st.columns(2)
+
+            with col1:
+                leave_type = st.selectbox(
+                    "Leave Type",
+                    ["Annual Leave", "Sick Leave", "Personal Leave", "Emergency Leave", "Maternity/Paternity Leave"],
+                    help="Select the type of leave you're requesting"
+                )
+
+                start_date = st.date_input(
+                    "Start Date",
+                    min_value=datetime.now().date(),
+                    help="First day of leave"
+                )
+
+                duration = st.number_input(
+                    "Duration (days)",
+                    min_value=0.5,
+                    max_value=30.0,
+                    step=0.5,
+                    value=1.0,
+                    help="Number of days requested"
+                )
+
+            with col2:
+                end_date = st.date_input(
+                    "End Date",
+                    min_value=datetime.now().date(),
+                    help="Last day of leave"
+                )
+
+                supervisor = st.selectbox(
+                    "Direct Supervisor",
+                    ["Sarah Wilson (HR Director)", "Mike Johnson (Finance Director)",
+                     "Emily Chen (Engineering Lead)", "Lisa Rodriguez (Marketing Manager)"],
+                    help="Select your direct supervisor for approval"
+                )
+
+                emergency_contact = st.text_input(
+                    "Emergency Contact",
+                    placeholder="Name and phone number",
+                    help="Emergency contact during leave"
+                )
+
+            reason = st.text_area(
+                "Reason for Leave",
+                placeholder="Please provide details about your leave request...",
+                height=100,
+                help="Explain the reason for your leave request"
+            )
+
+            work_coverage = st.text_area(
+                "Work Coverage Plan",
+                placeholder="Describe how your work will be covered during your absence...",
+                height=100,
+                help="Explain how your responsibilities will be handled"
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                submit_leave = st.form_submit_button(
+                    "📨 Submit Leave Request",
+                    use_container_width=True,
+                    type="primary"
+                )
+
+            with col2:
+                cancel_leave = st.form_submit_button(
+                    "❌ Cancel",
+                    use_container_width=True
+                )
+
+            if submit_leave:
+                if reason and work_coverage:
+                    # Create leave request data
+                    leave_request = {
+                        "request_id": f"LR-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+                        "employee": st.session_state.user_info.get('full_name', 'Unknown'),
+                        "employee_email": st.session_state.user_info.get('email', 'unknown@example.com'),
+                        "leave_type": leave_type,
+                        "start_date": start_date.strftime('%Y-%m-%d'),
+                        "end_date": end_date.strftime('%Y-%m-%d'),
+                        "duration": duration,
+                        "reason": reason,
+                        "work_coverage": work_coverage,
+                        "supervisor": supervisor,
+                        "emergency_contact": emergency_contact,
+                        "status": "Pending",
+                        "submitted_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    }
+
+                    # Send email to supervisor and HR
+                    success = self.send_leave_request_email(leave_request)
+
+                    if success:
+                        st.success(f"✅ Leave request submitted successfully! Request ID: {leave_request['request_id']}")
+                        st.info("📧 Your supervisor and HR have been notified. You'll receive a response within 48 hours.")
+                    else:
+                        st.error("❌ Failed to submit leave request. Please try again or contact HR directly.")
+                else:
+                    st.error("⚠️ Please fill in all required fields.")
+
+        # Recent leave requests
+        st.markdown("### 📊 Recent Leave Requests")
+
+        recent_requests = {
+            'Request ID': ['LR-20240201-001', 'LR-20240115-002', 'LR-20231220-003'],
+            'Type': ['Annual Leave', 'Sick Leave', 'Personal Leave'],
+            'Start Date': ['2024-02-15', '2024-01-20', '2023-12-25'],
+            'End Date': ['2024-02-19', '2024-01-22', '2023-12-29'],
+            'Duration': ['5 days', '3 days', '5 days'],
+            'Status': ['Approved', 'Approved', 'Approved'],
+            'Approved By': ['Sarah Wilson', 'Sarah Wilson', 'Mike Johnson']
+        }
+
+        requests_df = pd.DataFrame(recent_requests)
+
+        st.dataframe(
+            requests_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Request ID": st.column_config.TextColumn("Request ID", width="medium"),
+                "Type": st.column_config.TextColumn("Type", width="medium"),
+                "Start Date": st.column_config.DateColumn("Start Date", width="medium"),
+                "End Date": st.column_config.DateColumn("End Date", width="medium"),
+                "Duration": st.column_config.TextColumn("Duration", width="small"),
+                "Status": st.column_config.TextColumn("Status", width="small"),
+                "Approved By": st.column_config.TextColumn("Approved By", width="medium")
+            }
+        )
+
+    def send_leave_request_email(self, leave_request: dict) -> bool:
+        """Send leave request email to supervisor and HR"""
+        try:
+            if email_service is None:
+                return False
+
+            # Extract supervisor email (simplified for demo)
+            supervisor_emails = {
+                "Sarah Wilson (HR Director)": "keyegon@gmail.com",
+                "Mike Johnson (Finance Director)": "keyegon@gmail.com",
+                "Emily Chen (Engineering Lead)": "keyegon@gmail.com",
+                "Lisa Rodriguez (Marketing Manager)": "keyegon@gmail.com"
+            }
+
+            supervisor_email = supervisor_emails.get(leave_request['supervisor'], "keyegon@gmail.com")
+            hr_email = "keyegon@gmail.com"  # HR always gets a copy
+
+            # Send to supervisor
+            supervisor_success = email_service.send_email(
+                to_emails=[supervisor_email],
+                subject=f"Leave Request - {leave_request['employee']} ({leave_request['request_id']})",
+                body=f"""
+Leave Request Submitted
+
+Employee: {leave_request['employee']}
+Request ID: {leave_request['request_id']}
+Leave Type: {leave_request['leave_type']}
+Duration: {leave_request['start_date']} to {leave_request['end_date']} ({leave_request['duration']} days)
+
+Reason: {leave_request['reason']}
+
+Work Coverage Plan: {leave_request['work_coverage']}
+
+Emergency Contact: {leave_request['emergency_contact']}
+
+Please review and approve/deny this request in the HR system.
+                """
+            )
+
+            # Send confirmation to employee
+            employee_success = email_service.send_email(
+                to_emails=[leave_request['employee_email']],
+                subject=f"Leave Request Confirmation - {leave_request['request_id']}",
+                body=f"""
+Dear {leave_request['employee']},
+
+Your leave request has been submitted successfully.
+
+Request Details:
+- Request ID: {leave_request['request_id']}
+- Leave Type: {leave_request['leave_type']}
+- Duration: {leave_request['start_date']} to {leave_request['end_date']}
+- Days Requested: {leave_request['duration']}
+
+Your request has been sent to {leave_request['supervisor']} for approval.
+You will receive a response within 48 hours.
+
+Thank you,
+FinSolve HR Team
+                """
+            )
+
+            return supervisor_success and employee_success
+
+        except Exception as e:
+            logger.error(f"Failed to send leave request email: {str(e)}")
+            return False
+
+    # Finance-specific tab methods
+    def display_revenue_analysis_tab(self):
+        """Display revenue analysis with detailed financial data"""
+        st.markdown("## 💰 Revenue Analysis")
+
+        # Revenue metrics
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric("Total Revenue", "$12.5M", delta="+15% vs last quarter")
+        with col2:
+            st.metric("Recurring Revenue", "$9.2M", delta="+8% growth")
+        with col3:
+            st.metric("New Customer Revenue", "$3.3M", delta="+25% increase")
+        with col4:
+            st.metric("Revenue per Customer", "$45K", delta="+12% improvement")
+
+        # Revenue breakdown chart
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Quarterly revenue trend
+            revenue_data = {
+                'Quarter': ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024'],
+                'Revenue': [8.5, 9.2, 10.8, 11.2, 12.5],
+                'Target': [8.0, 9.0, 10.5, 11.0, 12.0]
+            }
+
+            fig_revenue = go.Figure()
+
+            fig_revenue.add_trace(go.Scatter(
+                x=revenue_data['Quarter'],
+                y=revenue_data['Revenue'],
+                mode='lines+markers',
+                name='Actual Revenue',
+                line=dict(color='#00F5D4', width=4),
+                marker=dict(size=10)
+            ))
+
+            fig_revenue.add_trace(go.Scatter(
+                x=revenue_data['Quarter'],
+                y=revenue_data['Target'],
+                mode='lines+markers',
+                name='Target Revenue',
+                line=dict(color='#0D1B2A', width=3, dash='dash'),
+                marker=dict(size=8)
+            ))
+
+            fig_revenue.update_layout(
+                title='Quarterly Revenue Trend',
+                xaxis_title='Quarter',
+                yaxis_title='Revenue ($M)',
+                height=400,
+                font=dict(family="Roboto", size=12),
+                title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+            )
+
+            st.plotly_chart(fig_revenue, use_container_width=True)
+
+        with col2:
+            # Revenue by source
+            revenue_sources = {
+                'Source': ['Software Licenses', 'Consulting Services', 'Support & Maintenance', 'Training', 'Other'],
+                'Amount': [6.2, 3.1, 2.4, 0.6, 0.2]
+            }
+
+            fig_pie = go.Figure(data=[go.Pie(
+                labels=revenue_sources['Source'],
+                values=revenue_sources['Amount'],
+                hole=0.4,
+                marker_colors=['#0D1B2A', '#00F5D4', '#4CAF50', '#FF9800', '#9C27B0']
+            )])
+
+            fig_pie.update_layout(
+                title='Revenue by Source ($M)',
+                height=400,
+                font=dict(family="Roboto", size=12),
+                title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+            )
+
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+    def display_expense_report_tab(self):
+        """Display expense analysis with real data from vector database"""
+        st.markdown("## 📊 Expense Report")
+
+        # Query vector database for expense information
+        user_role = st.session_state.user_info.get('role', 'finance')
+
+        # Get expense information from vector database
+        expense_query = "Show me detailed expense breakdown by category, vendor costs, operational expenses, and quarterly expense analysis for FinSolve Technologies"
+        expense_info = self.query_vector_database(expense_query, user_role, "Finance")
+
+        # Display the information from vector database
+        st.markdown("### 💰 Expense Analysis from Financial Database")
+        st.markdown(expense_info)
+
+        # Get specific expense metrics
+        metrics_query = "What are our total expenses, operating expenses, vendor costs, and expense ratios for the latest quarter?"
+        metrics_info = self.query_vector_database(metrics_query, user_role, "Finance")
+
+        st.markdown("### 📈 Expense Metrics")
+        st.markdown(metrics_info)
+
+        # Expense breakdown
+        st.markdown("### 📈 Expense Analysis by Category")
+
+        expense_data = {
+            'Category': ['Personnel', 'Technology', 'Marketing', 'Operations', 'Facilities', 'Professional Services', 'Travel', 'Other'],
+            'Q4 2023': [4.2, 1.8, 0.9, 0.8, 0.6, 0.4, 0.2, 0.3],
+            'Q1 2024': [4.5, 2.1, 1.1, 0.7, 0.6, 0.5, 0.3, 0.4],
+            'Budget': [4.3, 2.0, 1.0, 0.8, 0.6, 0.4, 0.3, 0.3],
+            'Variance': ['+4.7%', '+5.0%', '+10.0%', '-12.5%', '0.0%', '+25.0%', '0.0%', '+33.3%']
+        }
+
+        expense_df = pd.DataFrame(expense_data)
+
+        # Create expense comparison chart
+        fig_expense = go.Figure()
+
+        fig_expense.add_trace(go.Bar(
+            name='Q4 2023',
+            x=expense_data['Category'],
+            y=expense_data['Q4 2023'],
+            marker_color='#A9A9A9'
+        ))
+
+        fig_expense.add_trace(go.Bar(
+            name='Q1 2024',
+            x=expense_data['Category'],
+            y=expense_data['Q1 2024'],
+            marker_color='#00F5D4'
+        ))
+
+        fig_expense.add_trace(go.Scatter(
+            name='Budget',
+            x=expense_data['Category'],
+            y=expense_data['Budget'],
+            mode='markers',
+            marker=dict(color='#F44336', size=10, symbol='diamond'),
+            line=dict(color='#F44336', width=2)
+        ))
+
+        fig_expense.update_layout(
+            title='Expense Comparison: Actual vs Budget ($M)',
+            xaxis_title='Category',
+            yaxis_title='Amount ($M)',
+            height=500,
+            font=dict(family="Roboto", size=12),
+            title_font=dict(family="Poppins", size=16, color='#0D1B2A'),
+            barmode='group'
+        )
+
+        st.plotly_chart(fig_expense, use_container_width=True)
+
+        # Detailed expense table
+        st.markdown("### 📋 Detailed Expense Breakdown")
+
+        st.dataframe(
+            expense_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Category": st.column_config.TextColumn("Category", width="medium"),
+                "Q4 2023": st.column_config.NumberColumn("Q4 2023 ($M)", width="small", format="%.1f"),
+                "Q1 2024": st.column_config.NumberColumn("Q1 2024 ($M)", width="small", format="%.1f"),
+                "Budget": st.column_config.NumberColumn("Budget ($M)", width="small", format="%.1f"),
+                "Variance": st.column_config.TextColumn("Variance", width="small")
+            }
+        )
+
+    def display_budget_status_tab(self):
+        """Display budget status with real data from vector database"""
+        st.markdown("## 💳 Budget Status")
+
+        # Query vector database for budget information
+        user_role = st.session_state.user_info.get('role', 'finance')
+
+        # Get budget information from vector database
+        budget_query = "Show me budget status, budget vs actual spending, department budget allocation, and budget performance for FinSolve Technologies"
+        budget_info = self.query_vector_database(budget_query, user_role, "Finance")
+
+        # Display the information from vector database
+        st.markdown("### 💰 Budget Status from Financial Database")
+        st.markdown(budget_info)
+
+        # Get specific budget metrics
+        metrics_query = "What is our annual budget, year-to-date spending, remaining budget, and budget variance analysis?"
+        metrics_info = self.query_vector_database(metrics_query, user_role, "Finance")
+
+        st.markdown("### 📊 Budget Performance Analysis")
+        st.markdown(metrics_info)
+
+        # Budget vs actual spending
+        st.markdown("### 📊 Budget Performance by Department")
+
+        budget_data = {
+            'Department': ['Engineering', 'Sales', 'Marketing', 'Operations', 'HR', 'Finance', 'IT', 'Executive'],
+            'Annual Budget': [18.0, 8.5, 6.2, 4.8, 3.2, 2.8, 3.5, 3.0],
+            'YTD Actual': [4.2, 2.1, 1.8, 1.1, 0.8, 0.7, 0.9, 0.9],
+            'YTD Budget': [4.5, 2.1, 1.6, 1.2, 0.8, 0.7, 0.9, 0.8],
+            'Variance %': [-6.7, 0.0, +12.5, -8.3, 0.0, 0.0, 0.0, +12.5],
+            'Forecast': [17.8, 8.5, 6.8, 4.6, 3.2, 2.8, 3.5, 3.2]
+        }
+
+        budget_df = pd.DataFrame(budget_data)
+
+        # Budget performance chart
+        fig_budget = go.Figure()
+
+        fig_budget.add_trace(go.Bar(
+            name='YTD Budget',
+            x=budget_data['Department'],
+            y=budget_data['YTD Budget'],
+            marker_color='#A9A9A9',
+            opacity=0.7
+        ))
+
+        fig_budget.add_trace(go.Bar(
+            name='YTD Actual',
+            x=budget_data['Department'],
+            y=budget_data['YTD Actual'],
+            marker_color='#00F5D4'
+        ))
+
+        fig_budget.update_layout(
+            title='YTD Budget vs Actual Spending ($M)',
+            xaxis_title='Department',
+            yaxis_title='Amount ($M)',
+            height=400,
+            font=dict(family="Roboto", size=12),
+            title_font=dict(family="Poppins", size=16, color='#0D1B2A'),
+            barmode='group'
+        )
+
+        st.plotly_chart(fig_budget, use_container_width=True)
+
+        # Detailed budget table
+        st.dataframe(
+            budget_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Department": st.column_config.TextColumn("Department", width="medium"),
+                "Annual Budget": st.column_config.NumberColumn("Annual Budget ($M)", width="medium", format="%.1f"),
+                "YTD Actual": st.column_config.NumberColumn("YTD Actual ($M)", width="medium", format="%.1f"),
+                "YTD Budget": st.column_config.NumberColumn("YTD Budget ($M)", width="medium", format="%.1f"),
+                "Variance %": st.column_config.NumberColumn("Variance (%)", width="small", format="%.1f"),
+                "Forecast": st.column_config.NumberColumn("Forecast ($M)", width="medium", format="%.1f")
+            }
+        )
+
+    def display_financial_trends_tab(self):
+        """Display financial trends with real data from vector database"""
+        st.markdown("## 📈 Financial Trends")
+
+        # Query vector database for financial trends
+        user_role = st.session_state.user_info.get('role', 'finance')
+
+        # Get financial trends from vector database
+        trends_query = "Show me financial trends, revenue growth, profit margins, cash flow analysis, and quarterly performance trends for FinSolve Technologies"
+        trends_info = self.query_vector_database(trends_query, user_role, "Finance")
+
+        # Display the information from vector database
+        st.markdown("### 📊 Financial Trends from Company Database")
+        st.markdown(trends_info)
+
+        # Get specific financial metrics and forecasts
+        forecast_query = "What are our revenue growth rates, profit margins, cash flow trends, and financial forecasts for the upcoming quarters?"
+        forecast_info = self.query_vector_database(forecast_query, user_role, "Finance")
+
+        st.markdown("### 🔮 Financial Forecasts and Analysis")
+        st.markdown(forecast_info)
+
+        # Financial trends over time
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Revenue and profit trends
+            trend_data = {
+                'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                'Revenue 2023': [3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.1, 4.3, 4.5, 4.7, 4.8, 5.0],
+                'Revenue 2024': [4.0, 4.2, 4.3, None, None, None, None, None, None, None, None, None],
+                'Profit 2023': [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9],
+                'Profit 2024': [1.4, 1.5, 1.6, None, None, None, None, None, None, None, None, None]
+            }
+
+            fig_trends = go.Figure()
+
+            fig_trends.add_trace(go.Scatter(
+                x=trend_data['Month'],
+                y=trend_data['Revenue 2023'],
+                mode='lines+markers',
+                name='Revenue 2023',
+                line=dict(color='#A9A9A9', width=3),
+                marker=dict(size=6)
+            ))
+
+            fig_trends.add_trace(go.Scatter(
+                x=trend_data['Month'][:3],
+                y=trend_data['Revenue 2024'][:3],
+                mode='lines+markers',
+                name='Revenue 2024',
+                line=dict(color='#00F5D4', width=4),
+                marker=dict(size=8)
+            ))
+
+            fig_trends.add_trace(go.Scatter(
+                x=trend_data['Month'],
+                y=trend_data['Profit 2023'],
+                mode='lines+markers',
+                name='Profit 2023',
+                line=dict(color='#666666', width=3, dash='dash'),
+                marker=dict(size=6)
+            ))
+
+            fig_trends.add_trace(go.Scatter(
+                x=trend_data['Month'][:3],
+                y=trend_data['Profit 2024'][:3],
+                mode='lines+markers',
+                name='Profit 2024',
+                line=dict(color='#0D1B2A', width=4, dash='dash'),
+                marker=dict(size=8)
+            ))
+
+            fig_trends.update_layout(
+                title='Revenue and Profit Trends ($M)',
+                xaxis_title='Month',
+                yaxis_title='Amount ($M)',
+                height=400,
+                font=dict(family="Roboto", size=12),
+                title_font=dict(family="Poppins", size=16, color='#0D1B2A')
+            )
+
+            st.plotly_chart(fig_trends, use_container_width=True)
+
+        with col2:
+            # Key financial ratios
+            ratios_data = {
+                'Metric': ['Gross Margin', 'Operating Margin', 'Net Margin', 'Current Ratio', 'Debt-to-Equity', 'ROE'],
+                'Current': [68, 34, 28, 2.1, 0.3, 28],
+                'Target': [70, 35, 30, 2.0, 0.25, 30],
+                'Industry Avg': [65, 32, 25, 1.8, 0.4, 25]
+            }
+
+            fig_ratios = go.Figure()
+
+            fig_ratios.add_trace(go.Bar(
+                name='Current',
+                x=ratios_data['Metric'],
+                y=ratios_data['Current'],
+                marker_color='#00F5D4'
+            ))
+
+            fig_ratios.add_trace(go.Bar(
+                name='Target',
+                x=ratios_data['Metric'],
+                y=ratios_data['Target'],
+                marker_color='#0D1B2A'
+            ))
+
+            fig_ratios.add_trace(go.Bar(
+                name='Industry Avg',
+                x=ratios_data['Metric'],
+                y=ratios_data['Industry Avg'],
+                marker_color='#A9A9A9'
+            ))
+
+            fig_ratios.update_layout(
+                title='Key Financial Ratios (%)',
+                xaxis_title='Financial Metric',
+                yaxis_title='Percentage (%)',
+                height=400,
+                font=dict(family="Roboto", size=12),
+                title_font=dict(family="Poppins", size=16, color='#0D1B2A'),
+                barmode='group'
+            )
+            fig_ratios.update_xaxes(tickangle=45)
+
+            st.plotly_chart(fig_ratios, use_container_width=True)
+
+    # Marketing-specific tab methods (placeholder implementations)
+    def display_campaign_analytics_tab(self):
+        """Display campaign analytics"""
+        st.markdown("## 📈 Campaign Analytics")
+        st.info("📊 Campaign analytics dashboard coming soon. Contact marketing team for current campaign data.")
+
+    def display_market_research_tab(self):
+        """Display market research"""
+        st.markdown("## 🎯 Market Research")
+        st.info("🔍 Market research insights coming soon. Contact marketing team for current research data.")
+
+    def display_customer_insights_tab(self):
+        """Display customer insights"""
+        st.markdown("## 📊 Customer Insights")
+        st.info("👥 Customer insights dashboard coming soon. Contact marketing team for customer analytics.")
+
+    def display_marketing_policies_tab(self):
+        """Display marketing policies"""
+        st.markdown("## 💡 Marketing Policies")
+        st.info("📋 Marketing policies and guidelines coming soon. Contact marketing team for current policies.")
+
+    # Engineering-specific tab methods (placeholder implementations)
+    def display_system_architecture_tab(self):
+        """Display system architecture"""
+        st.markdown("## ⚙️ System Architecture")
+        st.info("🏗️ System architecture documentation coming soon. Contact engineering team for technical details.")
+
+    def display_technical_docs_tab(self):
+        """Display technical documentation"""
+        st.markdown("## 🔧 Technical Documentation")
+        st.info("📚 Technical documentation portal coming soon. Contact engineering team for current docs.")
+
+    def display_development_process_tab(self):
+        """Display development process"""
+        st.markdown("## 🚀 Development Process")
+        st.info("⚡ Development process guidelines coming soon. Contact engineering team for current procedures.")
+
+    def display_security_protocols_tab(self):
+        """Display security protocols"""
+        st.markdown("## 🔒 Security Protocols")
+        st.info("🛡️ Security protocols documentation coming soon. Contact engineering team for security guidelines.")
+
+    def query_vector_database(self, query: str, user_role: str = "employee", department: str = None) -> str:
+        """Query using MCP (Model Context Protocol) for enhanced data access"""
+        try:
+            # Get current user info for authentication
+            if not hasattr(st.session_state, 'user_info') or not st.session_state.user_info:
+                return "Authentication required to access database information."
+
+            user_info = st.session_state.user_info
+
+            # Use MCP client for intelligent query routing
+            try:
+                # Import MCP client
+                from src.mcp.client.mcp_client import mcp_client
+                import asyncio
+
+                # Create event loop if none exists
+                try:
+                    loop = asyncio.get_event_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+
+                # Query MCP servers with context
+                mcp_result = loop.run_until_complete(
+                    mcp_client.query_with_context(
+                        query=query,
+                        user_role=user_role,
+                        department=department or user_info.get('department', 'General')
+                    )
+                )
+
+                # Format MCP results for display
+                if mcp_result and "results" in mcp_result:
+                    formatted_results = []
+
+                    for tool_result in mcp_result["results"]:
+                        if "result" in tool_result:
+                            try:
+                                # Parse JSON result if it's a string
+                                if isinstance(tool_result["result"], str):
+                                    parsed_result = json.loads(tool_result["result"])
+                                else:
+                                    parsed_result = tool_result["result"]
+
+                                # Format result based on tool type
+                                if not parsed_result.get("error"):
+                                    formatted_result = self._format_mcp_result(parsed_result, tool_result.get("tool_name", ""))
+                                    formatted_results.append(formatted_result)
+                                else:
+                                    formatted_results.append(f"**Error from {tool_result.get('tool_name', 'MCP Tool')}:** {parsed_result['error']}")
+
+                            except json.JSONDecodeError:
+                                # Handle non-JSON results
+                                formatted_results.append(tool_result["result"])
+
+                    if formatted_results:
+                        final_response = "\n\n".join(formatted_results)
+                        return f"**MCP Enhanced Response:**\n\n{final_response}"
+                    else:
+                        return "No relevant information found in MCP servers."
+
+                else:
+                    # Fallback to API call if MCP fails
+                    logger.warning("MCP query failed, falling back to API call")
+                    return self._fallback_api_query(query)
+
+            except ImportError:
+                logger.warning("MCP client not available, falling back to API call")
+                return self._fallback_api_query(query)
+            except Exception as mcp_error:
+                logger.error(f"MCP query failed: {str(mcp_error)}")
+                return self._fallback_api_query(query)
+
+        except Exception as e:
+            logger.error(f"Query failed: {str(e)}")
+            return f"Error retrieving information: {str(e)}"
+
+    def _format_mcp_result(self, parsed_result: dict, tool_name: str) -> str:
+        """Format MCP result for display"""
+        try:
+            formatted = []
+
+            # Format based on tool type
+            if "hr_" in tool_name:
+                if "total_employees" in parsed_result:
+                    formatted.append(f"**Total Employees:** {parsed_result['total_employees']}")
+
+                    if "department_breakdown" in parsed_result:
+                        formatted.append("\n**Department Breakdown:**")
+                        for dept, count in parsed_result["department_breakdown"].items():
+                            formatted.append(f"- {dept}: {count} employees")
+
+                if "average_performance_rating" in parsed_result:
+                    formatted.append(f"\n**Performance Metrics:**")
+                    formatted.append(f"- Average Rating: {parsed_result['average_performance_rating']:.2f}/5")
+
+                    if "top_performers" in parsed_result and parsed_result["top_performers"]:
+                        formatted.append("\n**Top Performers:**")
+                        for performer in parsed_result["top_performers"][:5]:
+                            formatted.append(f"- {performer.get('full_name', 'N/A')} ({performer.get('department', 'N/A')}): {performer.get('performance_rating', 'N/A')}/5")
+
+                if "average_leave_balance" in parsed_result:
+                    formatted.append(f"\n**Leave Summary:**")
+                    formatted.append(f"- Average Leave Balance: {parsed_result['average_leave_balance']:.1f} days")
+                    formatted.append(f"- Average Leaves Taken: {parsed_result['average_leaves_taken']:.1f} days")
+
+            elif "finance_" in tool_name:
+                if "report_type" in parsed_result:
+                    formatted.append(f"**{parsed_result['report_type']}**")
+                    if "content" in parsed_result:
+                        content = parsed_result["content"]
+                        # Show first 500 characters
+                        preview = content[:500] + "..." if len(content) > 500 else content
+                        formatted.append(f"\n{preview}")
+
+                if "expense_analysis" in parsed_result:
+                    formatted.append("**Expense Analysis:**")
+                    exp_data = parsed_result["expense_analysis"]
+                    if "total_expenses" in exp_data:
+                        formatted.append(f"- Total Expenses: ${exp_data['total_expenses']:,}")
+
+                if "budget_status" in parsed_result:
+                    formatted.append("**Budget Status:**")
+                    budget_data = parsed_result["budget_status"]
+                    if "total_budget" in budget_data:
+                        formatted.append(f"- Total Budget: ${budget_data['total_budget']:,}")
+
+            elif "document_" in tool_name:
+                if "results" in parsed_result:
+                    search_results = parsed_result["results"]
+                    formatted.append(f"**Document Search Results:** ({len(search_results)} found)")
+
+                    for doc in search_results[:3]:  # Show top 3 results
+                        formatted.append(f"\n**{doc.get('filename', 'Unknown')}**")
+                        formatted.append(f"- Department: {doc.get('department', 'N/A')}")
+                        if "content_preview" in doc:
+                            preview = doc["content_preview"][:200] + "..." if len(doc["content_preview"]) > 200 else doc["content_preview"]
+                            formatted.append(f"- Preview: {preview}")
+
+                if "content" in parsed_result:
+                    formatted.append("**Document Content:**")
+                    content = parsed_result["content"]
+                    preview = content[:800] + "..." if len(content) > 800 else content
+                    formatted.append(preview)
+
+            return "\n".join(formatted) if formatted else str(parsed_result)
+
+        except Exception as e:
+            logger.error(f"Error formatting MCP result: {str(e)}")
+            return str(parsed_result)
+
+    def _fallback_api_query(self, query: str) -> str:
+        """Fallback to API call when MCP is not available"""
+        try:
+            # Make API call to get data from vector database
+            response = self.api_client.post(
+                "/chat/message",
+                json={
+                    "content": query,
+                    "session_id": f"tab_query_{int(time.time())}"
+                },
+                headers={
+                    "Authorization": f"Bearer {st.session_state.get('access_token', '')}"
+                }
+            )
+
+            if response and response.status_code == 200:
+                data = response.json()
+                return data.get("content", "No information found.")
+            else:
+                logger.error(f"API call failed: {response.status_code if response else 'No response'}")
+                return f"Unable to retrieve information. Status: {response.status_code if response else 'Connection failed'}"
+
+        except Exception as e:
+            logger.error(f"Fallback API query failed: {str(e)}")
+            return f"Error retrieving information: {str(e)}"
+
+    def display_document_upload_interface(self):
+        """Display document upload interface"""
+        st.markdown("## 📤 Document Upload")
+        st.markdown("*Upload new documents to the FinSolve AI Assistant knowledge base*")
+
+        # Import document manager
+        try:
+            from src.utils.document_manager import document_manager
+        except ImportError:
+            st.error("❌ Document management system not available")
+            return
+
+        user_role = st.session_state.user_info.get('role', 'employee').lower()
+        user_dept = st.session_state.user_info.get('department', 'General')
+
+        with st.form("document_upload_form"):
+            st.markdown("### 📋 Document Information")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                # Department selection (restricted to user's department unless admin)
+                if user_role == 'c_level':
+                    department = st.selectbox(
+                        "Department",
+                        ["Engineering", "Finance", "HR", "Marketing", "General"],
+                        help="Select the department this document belongs to"
+                    )
+                else:
+                    department = st.selectbox(
+                        "Department",
+                        [user_dept],
+                        disabled=True,
+                        help="Documents can only be uploaded to your department"
+                    )
+
+            with col2:
+                document_type = st.selectbox(
+                    "Document Type",
+                    ["Policy", "Report", "Procedure", "Training Material", "Data", "Other"],
+                    help="Select the type of document"
+                )
+
+            # File upload
+            uploaded_file = st.file_uploader(
+                "Choose a file",
+                type=['pdf', 'docx', 'txt', 'csv', 'xlsx', 'md'],
+                help="Supported formats: PDF, DOCX, TXT, CSV, XLSX, MD"
+            )
+
+            description = st.text_area(
+                "Description",
+                placeholder="Provide a brief description of the document content...",
+                height=100,
+                help="Describe what this document contains and its purpose"
+            )
+
+            # Upload button
+            col1, col2 = st.columns(2)
+
+            with col1:
+                upload_button = st.form_submit_button(
+                    "📤 Upload Document",
+                    use_container_width=True,
+                    type="primary"
+                )
+
+            with col2:
+                cancel_button = st.form_submit_button(
+                    "❌ Cancel",
+                    use_container_width=True
+                )
+
+            if cancel_button:
+                del st.session_state.show_document_upload
+                st.rerun()
+
+            if upload_button and uploaded_file:
+                with st.spinner("📤 Uploading and processing document..."):
+                    # Save uploaded file temporarily
+                    import tempfile
+                    import os
+
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp_file:
+                        tmp_file.write(uploaded_file.getvalue())
+                        tmp_file_path = tmp_file.name
+
+                    try:
+                        # Upload document
+                        result = document_manager.upload_document(
+                            file_path=tmp_file_path,
+                            department=department,
+                            document_type=document_type.lower()
+                        )
+
+                        if result['success']:
+                            st.success(f"✅ {result['message']}")
+                            st.info("🔄 Document has been processed and added to the knowledge base. It will be available for queries immediately.")
+
+                            # Show document metadata
+                            with st.expander("📋 Document Details"):
+                                metadata = result['metadata']
+                                col1, col2 = st.columns(2)
+
+                                with col1:
+                                    st.write(f"**Filename:** {metadata['filename']}")
+                                    st.write(f"**Department:** {metadata['department']}")
+                                    st.write(f"**Type:** {metadata['document_type']}")
+
+                                with col2:
+                                    st.write(f"**Size:** {metadata['file_size']:,} bytes")
+                                    st.write(f"**Upload Date:** {metadata['upload_date']}")
+                                    st.write(f"**Content Length:** {metadata['content_length']:,} characters")
+                        else:
+                            st.error(f"❌ Upload failed: {result['error']}")
+                            if 'supported_formats' in result:
+                                st.info(f"Supported formats: {', '.join(result['supported_formats'])}")
+
+                    finally:
+                        # Clean up temporary file
+                        try:
+                            os.unlink(tmp_file_path)
+                        except:
+                            pass
+
+            elif upload_button and not uploaded_file:
+                st.error("⚠️ Please select a file to upload")
+
+    def display_document_manager_interface(self):
+        """Display document management interface"""
+        st.markdown("## 📋 Document Manager")
+        st.markdown("*View and manage documents in the knowledge base*")
+
+        # Import document manager
+        try:
+            from src.utils.document_manager import document_manager
+        except ImportError:
+            st.error("❌ Document management system not available")
+            return
+
+        user_role = st.session_state.user_info.get('role', 'employee').lower()
+        user_dept = st.session_state.user_info.get('department', 'General')
+
+        # Filter options
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if user_role == 'c_level':
+                dept_filter = st.selectbox(
+                    "Filter by Department",
+                    ["All", "Engineering", "Finance", "HR", "Marketing", "General"]
+                )
+            else:
+                dept_filter = st.selectbox(
+                    "Department",
+                    [user_dept],
+                    disabled=True
+                )
+
+        with col2:
+            sort_by = st.selectbox(
+                "Sort by",
+                ["Modified Date", "Name", "Size", "Department"]
+            )
+
+        with col3:
+            if st.button("🔄 Refresh", use_container_width=True):
+                st.rerun()
+
+        # Get documents
+        if dept_filter == "All":
+            documents = document_manager.list_documents()
+        else:
+            documents = document_manager.list_documents(department=dept_filter)
+
+        if documents:
+            st.markdown(f"### 📊 Documents ({len(documents)} found)")
+
+            # Convert to DataFrame for display
+            import pandas as pd
+            df = pd.DataFrame(documents)
+
+            # Format file size
+            df['size_mb'] = (df['size'] / (1024 * 1024)).round(2)
+            df['modified_date'] = pd.to_datetime(df['modified']).dt.strftime('%Y-%m-%d %H:%M')
+
+            # Display documents table
+            st.dataframe(
+                df[['filename', 'department', 'size_mb', 'modified_date']],
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "filename": st.column_config.TextColumn("Document Name", width="large"),
+                    "department": st.column_config.TextColumn("Department", width="medium"),
+                    "size_mb": st.column_config.NumberColumn("Size (MB)", width="small", format="%.2f"),
+                    "modified_date": st.column_config.TextColumn("Last Modified", width="medium")
+                }
+            )
+
+            # Document actions
+            st.markdown("### 🔧 Document Actions")
+
+            selected_doc = st.selectbox(
+                "Select document for actions",
+                options=[f"{doc['filename']} ({doc['department']})" for doc in documents],
+                help="Choose a document to perform actions on"
+            )
+
+            if selected_doc:
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    if st.button("📄 View Details", use_container_width=True):
+                        # Find selected document
+                        doc_name = selected_doc.split(' (')[0]
+                        doc = next((d for d in documents if d['filename'] == doc_name), None)
+
+                        if doc:
+                            with st.expander("📋 Document Details", expanded=True):
+                                col1, col2 = st.columns(2)
+
+                                with col1:
+                                    st.write(f"**Name:** {doc['filename']}")
+                                    st.write(f"**Department:** {doc['department']}")
+                                    st.write(f"**Size:** {doc['size']:,} bytes")
+
+                                with col2:
+                                    st.write(f"**Modified:** {doc['modified_date']}")
+                                    st.write(f"**Path:** {doc['path']}")
+
+                with col2:
+                    if st.button("🔄 Re-index", use_container_width=True):
+                        st.info("🔄 Re-indexing functionality coming soon")
+
+                with col3:
+                    if st.button("🗑️ Delete", use_container_width=True, type="secondary"):
+                        st.warning("⚠️ Delete functionality requires confirmation")
+        else:
+            st.info("📁 No documents found in the selected department")
+            st.markdown("💡 **Tip:** Upload documents using the 'Upload Document' feature to build your knowledge base")
+
     def display_visualization(self, visualization: Dict[str, Any]):
         """Display enhanced visualizations with professional presentation."""
         try:
@@ -1982,61 +3634,82 @@ keyegon@gmail.com
         
         user_role = st.session_state.user_info.get('role', 'employee').lower()
         
-        # Role-specific quick actions
+        # Role-specific quick actions with proper access control
         role_actions = {
             "c_level": [
-                {"icon": "📊", "label": "Executive Dashboard", "query": "Show me executive summary and KPIs"},
-                {"icon": "💰", "label": "Financial Overview", "query": "What's our current financial performance?"},
+                {"icon": "📊", "label": "Executive Dashboard", "type": "dashboard", "dashboard_type": "executive"},
+                {"icon": "💰", "label": "Financial Overview", "type": "dashboard", "dashboard_type": "financial"},
                 {"icon": "🎯", "label": "Strategic Goals", "query": "How are we performing against strategic objectives?"},
-                {"icon": "👥", "label": "Team Performance", "query": "Show me team performance metrics"}
+                {"icon": "👥", "label": "Team Performance", "type": "dashboard", "dashboard_type": "departmental"}
             ],
             "hr": [
-                {"icon": "👥", "label": "Employee Count", "query": "How many employees by department?"},
-                {"icon": "📈", "label": "Performance Data", "query": "Show me employee performance metrics"},
-                {"icon": "🎓", "label": "Training Status", "query": "What's our training completion status?"},
-                {"icon": "📋", "label": "HR Policies", "query": "What are our main HR policies?"}
+                {"icon": "👥", "label": "Employee Overview", "type": "tab", "tab_type": "employee_overview"},
+                {"icon": "📈", "label": "Performance Data", "type": "tab", "tab_type": "performance_data"},
+                {"icon": "🎓", "label": "Training Status", "type": "tab", "tab_type": "training_status"},
+                {"icon": "📋", "label": "HR Policies", "type": "tab", "tab_type": "hr_policies"},
+                {"icon": "📝", "label": "Leave Application", "type": "tab", "tab_type": "leave_application"}
             ],
             "finance": [
-                {"icon": "💰", "label": "Revenue Analysis", "query": "Show me quarterly revenue analysis"},
-                {"icon": "📊", "label": "Expense Report", "query": "What are our major expense categories?"},
-                {"icon": "💳", "label": "Budget Status", "query": "How are we tracking against budget?"},
-                {"icon": "📈", "label": "Financial Trends", "query": "Show me financial trends and forecasts"}
+                {"icon": "💰", "label": "Revenue Analysis", "type": "tab", "tab_type": "revenue_analysis"},
+                {"icon": "📊", "label": "Expense Report", "type": "tab", "tab_type": "expense_report"},
+                {"icon": "💳", "label": "Budget Status", "type": "tab", "tab_type": "budget_status"},
+                {"icon": "📈", "label": "Financial Trends", "type": "tab", "tab_type": "financial_trends"}
+            ],
+            "marketing": [
+                {"icon": "📈", "label": "Campaign Analytics", "type": "tab", "tab_type": "campaign_analytics"},
+                {"icon": "🎯", "label": "Market Research", "type": "tab", "tab_type": "market_research"},
+                {"icon": "📊", "label": "Customer Insights", "type": "tab", "tab_type": "customer_insights"},
+                {"icon": "💡", "label": "Marketing Policies", "type": "tab", "tab_type": "marketing_policies"}
+            ],
+            "engineering": [
+                {"icon": "⚙️", "label": "System Architecture", "type": "tab", "tab_type": "system_architecture"},
+                {"icon": "🔧", "label": "Technical Docs", "type": "tab", "tab_type": "technical_docs"},
+                {"icon": "🚀", "label": "Development Process", "type": "tab", "tab_type": "development_process"},
+                {"icon": "🔒", "label": "Security Protocols", "type": "tab", "tab_type": "security_protocols"}
             ]
         }
-        
-        # Default actions for all roles
-        default_actions = [
-            {"icon": "🔍", "label": "Company Overview", "query": "Give me a company overview"},
-            {"icon": "📋", "label": "Policies", "query": "What are our main company policies?"},
-            {"icon": "💡", "label": "Help", "query": "What can you help me with?"},
-            {"icon": "📊", "label": "Analytics", "query": "Show me key performance metrics"}
+
+        # Restricted actions for employee role - only basic access + leave application
+        employee_actions = [
+            {"icon": "🔍", "label": "Company Overview", "query": "Give me a general company overview"},
+            {"icon": "📝", "label": "Leave Application", "type": "tab", "tab_type": "leave_application"},
+            {"icon": "📋", "label": "General Policies", "type": "restricted_info", "message": "For detailed policy information, please contact your supervisor or HR department."},
+            {"icon": "💡", "label": "Help", "query": "What general information can you help me with?"},
+            {"icon": "📞", "label": "Contact Supervisor", "type": "contact_info", "message": "For specific information beyond general company overview, please contact your direct supervisor."}
         ]
         
-        actions = role_actions.get(user_role, default_actions)
-        
+        # Get appropriate actions based on role
+        if user_role == "employee":
+            actions = employee_actions
+        else:
+            actions = role_actions.get(user_role, employee_actions)
+
         for action in actions:
             if st.button(
                 f"{action['icon']} {action['label']}",
                 key=f"quick_{action['label'].lower().replace(' ', '_')}",
                 use_container_width=True,
-                help=f"Show: {action['label']}"
+                help=f"Access: {action['label']}"
             ):
-                # Check if this is a dashboard request
-                label_lower = action['label'].lower()
-                if 'dashboard' in label_lower or 'overview' in label_lower:
+                action_type = action.get('type', 'query')
+
+                if action_type == 'dashboard':
                     # Store dashboard request in session state
-                    if 'executive' in label_lower:
-                        st.session_state.show_dashboard = 'executive'
-                    elif 'financial' in label_lower:
-                        st.session_state.show_dashboard = 'financial'
-                    elif 'team' in label_lower or 'department' in label_lower:
-                        st.session_state.show_dashboard = 'departmental'
-                    else:
-                        st.session_state.show_dashboard = 'general'
+                    st.session_state.show_dashboard = action['dashboard_type']
                     st.rerun()
+                elif action_type == 'tab':
+                    # Store tab request in session state
+                    st.session_state.show_tab = action['tab_type']
+                    st.rerun()
+                elif action_type == 'restricted_info':
+                    # Show restricted access message
+                    st.warning(action['message'])
+                elif action_type == 'contact_info':
+                    # Show contact information
+                    st.info(action['message'])
                 else:
-                    # Regular message for non-dashboard actions
-                    if self.send_message(action['query']):
+                    # Regular query message
+                    if 'query' in action and self.send_message(action['query']):
                         st.rerun()
     
     def display_enhanced_sidebar(self):
@@ -2079,8 +3752,13 @@ keyegon@gmail.com
             
             # Quick actions
             self.display_quick_actions_sidebar()
-            
+
             st.markdown("---")
+
+            # System Administration (System Admin only)
+            if user['role'].lower() == 'system_admin':
+                self.display_admin_sidebar()
+                st.markdown("---")
             
             # AI status
             st.markdown("### 🤖 AI Assistant Status")
@@ -2114,6 +3792,20 @@ keyegon@gmail.com
 
             if st.button("📨 Send Inquiry to Expert", use_container_width=True, help="Route your question to the right department"):
                 self.show_inquiry_form()
+
+            # Document management for authorized users
+            user_role = st.session_state.user_info.get('role', 'employee').lower()
+            if user_role in ['hr', 'finance', 'marketing', 'engineering', 'c_level']:
+                st.markdown("---")
+                st.markdown("### 📁 Document Management")
+
+                if st.button("📤 Upload Document", use_container_width=True, help="Upload new documents to the system"):
+                    st.session_state.show_document_upload = True
+                    st.rerun()
+
+                if st.button("📋 Manage Documents", use_container_width=True, help="View and manage existing documents"):
+                    st.session_state.show_document_manager = True
+                    st.rerun()
 
             # Contact Information
             st.markdown("### 📞 Contact Information")
@@ -2631,11 +4323,248 @@ Developed by Dr. Erick K. Yegon
 </html>
         """
 
+    def display_admin_sidebar(self):
+        """Display system administration options in sidebar (System Admin only)"""
+        st.markdown("### 🔧 System Administration")
+
+        admin_actions = [
+            {"label": "👥 User Management", "action": "user_management"},
+            {"label": "📊 System Statistics", "action": "system_stats"},
+            {"label": "🔐 Security Audit", "action": "security_audit"},
+            {"label": "📋 Activity Logs", "action": "activity_logs"}
+        ]
+
+        for action in admin_actions:
+            if st.button(action["label"], key=f"admin_{action['action']}", use_container_width=True):
+                st.session_state.admin_action = action["action"]
+                st.rerun()
+
+    def display_admin_interface(self):
+        """Display system administration interface"""
+        admin_action = st.session_state.get('admin_action', 'user_management')
+
+        # Header
+        st.markdown("# 🔧 System Administration")
+
+        # Navigation tabs
+        tab1, tab2, tab3, tab4 = st.tabs(["👥 User Management", "📊 System Stats", "🔐 Security", "📋 Logs"])
+
+        with tab1:
+            if admin_action == 'user_management':
+                self.display_user_management()
+
+        with tab2:
+            if admin_action == 'system_stats':
+                self.display_system_statistics()
+
+        with tab3:
+            if admin_action == 'security_audit':
+                self.display_security_audit()
+
+        with tab4:
+            if admin_action == 'activity_logs':
+                self.display_activity_logs()
+
+        # Back to chat button
+        if st.button("🔙 Back to Chat", type="primary"):
+            if 'admin_action' in st.session_state:
+                del st.session_state.admin_action
+            st.rerun()
+
+    def display_user_management(self):
+        """Display user management interface"""
+        st.markdown("## 👥 User Management")
+
+        # User management actions
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if st.button("➕ Create New User", use_container_width=True):
+                st.session_state.show_create_user = True
+
+        with col2:
+            if st.button("📋 List All Users", use_container_width=True):
+                st.session_state.show_user_list = True
+
+        with col3:
+            if st.button("🔄 Reset Password", use_container_width=True):
+                st.session_state.show_reset_password = True
+
+        # Create user form
+        if st.session_state.get('show_create_user', False):
+            st.markdown("### ➕ Create New User")
+
+            with st.form("create_user_form"):
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    email = st.text_input("Email Address*")
+                    username = st.text_input("Username*")
+                    full_name = st.text_input("Full Name*")
+
+                with col2:
+                    role = st.selectbox("Role*", ["employee", "hr", "finance", "marketing", "engineering", "ceo"])
+                    department = st.text_input("Department")
+                    employee_id = st.text_input("Employee ID")
+
+                password = st.text_input("Temporary Password*", type="password")
+
+                submitted = st.form_submit_button("Create User", type="primary")
+
+                if submitted:
+                    if email and username and full_name and password and role:
+                        # Call user creation API
+                        try:
+                            response = self.api_client.post(
+                                "/admin/users",
+                                json={
+                                    "email": email,
+                                    "username": username,
+                                    "full_name": full_name,
+                                    "password": password,
+                                    "role": role,
+                                    "department": department,
+                                    "employee_id": employee_id
+                                },
+                                headers=self.get_headers()
+                            )
+
+                            if response.status_code == 200:
+                                st.success(f"✅ User {username} created successfully!")
+                                st.session_state.show_create_user = False
+                                st.rerun()
+                            else:
+                                st.error(f"❌ Failed to create user: {response.text}")
+                        except Exception as e:
+                            st.error(f"❌ Error creating user: {str(e)}")
+                    else:
+                        st.error("❌ Please fill in all required fields")
+
+        # List users
+        if st.session_state.get('show_user_list', False):
+            st.markdown("### 📋 All Users")
+
+            try:
+                response = self.api_client.get("/admin/users", headers=self.get_headers())
+
+                if response.status_code == 200:
+                    users_data = response.json()
+                    users = users_data.get('users', [])
+
+                    if users:
+                        # Create DataFrame for display
+                        import pandas as pd
+                        df = pd.DataFrame(users)
+
+                        # Display user table
+                        st.dataframe(
+                            df[['username', 'full_name', 'email', 'role', 'department', 'is_active']],
+                            use_container_width=True
+                        )
+
+                        st.info(f"📊 Total Users: {len(users)}")
+                    else:
+                        st.info("No users found")
+                else:
+                    st.error(f"❌ Failed to fetch users: {response.text}")
+            except Exception as e:
+                st.error(f"❌ Error fetching users: {str(e)}")
+
+        # Reset password
+        if st.session_state.get('show_reset_password', False):
+            st.markdown("### 🔄 Reset User Password")
+
+            with st.form("reset_password_form"):
+                user_id = st.number_input("User ID", min_value=1, step=1)
+                new_password = st.text_input("New Password", type="password")
+
+                submitted = st.form_submit_button("Reset Password", type="primary")
+
+                if submitted and user_id and new_password:
+                    try:
+                        response = self.api_client.post(
+                            f"/admin/users/{user_id}/reset-password",
+                            json={"new_password": new_password},
+                            headers=self.get_headers()
+                        )
+
+                        if response.status_code == 200:
+                            st.success("✅ Password reset successfully!")
+                            st.session_state.show_reset_password = False
+                            st.rerun()
+                        else:
+                            st.error(f"❌ Failed to reset password: {response.text}")
+                    except Exception as e:
+                        st.error(f"❌ Error resetting password: {str(e)}")
+
+    def display_system_statistics(self):
+        """Display system statistics"""
+        st.markdown("## 📊 System Statistics")
+
+        try:
+            response = self.api_client.get("/admin/stats", headers=self.get_headers())
+
+            if response.status_code == 200:
+                stats = response.json().get('system_stats', {})
+
+                # Display metrics
+                col1, col2, col3, col4 = st.columns(4)
+
+                with col1:
+                    st.metric("Total Users", stats.get('total_users', 0))
+
+                with col2:
+                    st.metric("Active Users", stats.get('active_users', 0))
+
+                with col3:
+                    st.metric("Inactive Users", stats.get('inactive_users', 0))
+
+                with col4:
+                    active_rate = (stats.get('active_users', 0) / max(stats.get('total_users', 1), 1)) * 100
+                    st.metric("Active Rate", f"{active_rate:.1f}%")
+
+                # Role distribution
+                if 'role_distribution' in stats:
+                    st.markdown("### 👥 Role Distribution")
+                    role_data = stats['role_distribution']
+
+                    import pandas as pd
+                    df = pd.DataFrame(list(role_data.items()), columns=['Role', 'Count'])
+                    st.bar_chart(df.set_index('Role'))
+
+                # Department distribution
+                if 'department_distribution' in stats:
+                    st.markdown("### 🏢 Department Distribution")
+                    dept_data = stats['department_distribution']
+
+                    df = pd.DataFrame(list(dept_data.items()), columns=['Department', 'Count'])
+                    st.bar_chart(df.set_index('Department'))
+
+            else:
+                st.error(f"❌ Failed to fetch statistics: {response.text}")
+        except Exception as e:
+            st.error(f"❌ Error fetching statistics: {str(e)}")
+
+    def display_security_audit(self):
+        """Display security audit information"""
+        st.markdown("## 🔐 Security Audit")
+        st.info("🚧 Security audit features coming soon...")
+
+    def display_activity_logs(self):
+        """Display activity logs"""
+        st.markdown("## 📋 Activity Logs")
+        st.info("🚧 Activity log features coming soon...")
+
     def main_chat_interface(self):
         """Display enhanced main chat interface."""
         user = st.session_state.user_info
         role_config = ROLE_CONFIG.get(user['role'].lower(), ROLE_CONFIG['employee'])
-        
+
+        # Check if admin action is requested
+        if hasattr(st.session_state, 'admin_action') and user['role'].lower() == 'system_admin':
+            self.display_admin_interface()
+            return
+
         # Enhanced header with user context
         self.display_header(
             f"Welcome, {user['full_name'].split()[0]}! 👋",
@@ -2664,6 +4593,34 @@ Developed by Dr. Erick K. Yegon
                 # Add a button to return to chat
                 if st.button("💬 Return to Chat", type="secondary"):
                     del st.session_state.show_dashboard
+                    st.rerun()
+            # Check if role-specific tab should be displayed
+            elif hasattr(st.session_state, 'show_tab') and st.session_state.show_tab:
+                tab_type = st.session_state.show_tab
+                user_role = st.session_state.user_info.get('role', 'employee')
+
+                # Display the requested tab
+                self.display_role_specific_tab(tab_type, user_role)
+
+                # Add a button to return to chat
+                if st.button("💬 Return to Chat", type="secondary", key="return_from_tab"):
+                    del st.session_state.show_tab
+                    st.rerun()
+            # Check if document upload should be displayed
+            elif hasattr(st.session_state, 'show_document_upload') and st.session_state.show_document_upload:
+                self.display_document_upload_interface()
+
+                # Add a button to return to chat
+                if st.button("💬 Return to Chat", type="secondary", key="return_from_upload"):
+                    del st.session_state.show_document_upload
+                    st.rerun()
+            # Check if document manager should be displayed
+            elif hasattr(st.session_state, 'show_document_manager') and st.session_state.show_document_manager:
+                self.display_document_manager_interface()
+
+                # Add a button to return to chat
+                if st.button("💬 Return to Chat", type="secondary", key="return_from_manager"):
+                    del st.session_state.show_document_manager
                     st.rerun()
             else:
                 # Regular chat interface

@@ -13,6 +13,9 @@ langchain-core==0.1.10
 langgraph==0.0.20
 langserve==0.0.30
 
+# Model Context Protocol (MCP)
+mcp>=1.9.0
+
 # Vector Database & Embeddings (Compatible versions)
 chromadb==0.4.18
 sentence-transformers==2.2.2

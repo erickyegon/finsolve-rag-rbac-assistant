@@ -38,7 +38,8 @@ class UserRole(str, Enum):
     FINANCE = "finance"
     MARKETING = "marketing"
     ENGINEERING = "engineering"
-    C_LEVEL = "c_level"
+    CEO = "ceo"  # Chief Executive Officer - highest business access
+    SYSTEM_ADMIN = "system_admin"  # System Administrator - user management and system control
 
 
 class Settings(BaseSettings):
@@ -237,11 +238,27 @@ class RolePermissions:
             "restricted_fields": [],
             "can_access_personal_data": False
         },
-        UserRole.C_LEVEL: {
+        UserRole.CEO: {
             "departments": ["finance", "marketing", "hr", "engineering", "general"],
             "data_types": ["all"],
             "restricted_fields": [],
-            "can_access_personal_data": True
+            "can_access_personal_data": True,
+            "can_view_all_data": True,
+            "can_access_executive_reports": True,
+            "can_view_financial_details": True,
+            "can_access_strategic_data": True
+        },
+        UserRole.SYSTEM_ADMIN: {
+            "departments": ["system", "general"],
+            "data_types": ["user_management", "system_logs", "security_settings", "policies"],
+            "restricted_fields": [],
+            "can_access_personal_data": False,
+            "can_manage_users": True,
+            "can_access_system_settings": True,
+            "can_view_audit_logs": True,
+            "can_manage_roles": True,
+            "can_reset_passwords": True,
+            "can_access_business_data": False  # No access to business intelligence data
         }
     }
     

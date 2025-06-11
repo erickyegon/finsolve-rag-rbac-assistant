@@ -1,0 +1,242 @@
+# FinSolve AI Assistant - AWS Deployment Workflow
+# Author: Dr. Erick K. Yegon
+
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: finsolve-ai-assistant
+  ECS_SERVICE: finsolve-service
+  ECS_CLUSTER: finsolve-cluster
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov black flake8
+    
+    - name: Run code formatting check
+      run: black --check .
+    
+    - name: Run linting
+      run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    
+    - name: Run tests
+      run: |
+        pytest tests/ -v --cov=src --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  build-and-deploy:
+    needs: [test, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+    
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build Docker image
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        
+        # Push images to ECR
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+    
+    - name: Update Auto Scaling Group Launch Template
+      env:
+        IMAGE_URI: ${{ steps.build-image.outputs.image }}
+      run: |
+        # Get current launch template
+        TEMPLATE_ID=$(aws ec2 describe-launch-templates \
+          --launch-template-names finsolve-launch-template \
+          --query 'LaunchTemplates[0].LaunchTemplateId' \
+          --output text)
+        
+        # Create new version with updated image
+        aws ec2 create-launch-template-version \
+          --launch-template-id $TEMPLATE_ID \
+          --source-version '$Latest' \
+          --launch-template-data '{
+            "ImageId": "ami-0c02fb55956c7d316",
+            "UserData": "'$(base64 -w 0 terraform/user-data.sh)'"
+          }'
+        
+        # Update Auto Scaling Group to use latest template version
+        aws autoscaling update-auto-scaling-group \
+          --auto-scaling-group-name finsolve-asg \
+          --launch-template LaunchTemplateName=finsolve-launch-template,Version='$Latest'
+    
+    - name: Trigger instance refresh
+      run: |
+        aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name finsolve-asg \
+          --preferences MinHealthyPercentage=50,InstanceWarmup=300
+    
+    - name: Wait for deployment to complete
+      run: |
+        echo "Waiting for instance refresh to complete..."
+        aws autoscaling wait instance-refresh-successful \
+          --auto-scaling-group-name finsolve-asg \
+          --instance-refresh-ids $(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name finsolve-asg \
+            --query 'InstanceRefreshes[0].InstanceRefreshId' \
+            --output text)
+    
+    - name: Run health checks
+      run: |
+        # Get load balancer DNS name
+        ALB_DNS=$(aws elbv2 describe-load-balancers \
+          --names finsolve-alb \
+          --query 'LoadBalancers[0].DNSName' \
+          --output text)
+        
+        # Wait for health checks to pass
+        echo "Running health checks on http://$ALB_DNS"
+        
+        for i in {1..30}; do
+          if curl -f "http://$ALB_DNS/health" > /dev/null 2>&1; then
+            echo "✅ Health check passed"
+            break
+          else
+            echo "⏳ Health check attempt $i/30 failed, retrying in 30 seconds..."
+            sleep 30
+          fi
+        done
+    
+    - name: Send deployment notification
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  rollback:
+    needs: [build-and-deploy]
+    runs-on: ubuntu-latest
+    if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production')
+    
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Rollback deployment
+      run: |
+        echo "🔄 Rolling back deployment..."
+        
+        # Cancel current instance refresh
+        aws autoscaling cancel-instance-refresh \
+          --auto-scaling-group-name finsolve-asg || true
+        
+        # Get previous launch template version
+        TEMPLATE_ID=$(aws ec2 describe-launch-templates \
+          --launch-template-names finsolve-launch-template \
+          --query 'LaunchTemplates[0].LaunchTemplateId' \
+          --output text)
+        
+        PREVIOUS_VERSION=$(aws ec2 describe-launch-template-versions \
+          --launch-template-id $TEMPLATE_ID \
+          --query 'LaunchTemplateVersions[-2].VersionNumber' \
+          --output text)
+        
+        # Update ASG to use previous version
+        aws autoscaling update-auto-scaling-group \
+          --auto-scaling-group-name finsolve-asg \
+          --launch-template LaunchTemplateName=finsolve-launch-template,Version=$PREVIOUS_VERSION
+        
+        # Start instance refresh with previous version
+        aws autoscaling start-instance-refresh \
+          --auto-scaling-group-name finsolve-asg \
+          --preferences MinHealthyPercentage=50,InstanceWarmup=300
+        
+        echo "✅ Rollback initiated"
+    
+    - name: Send rollback notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: 'warning'
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: '🔄 Deployment rolled back due to failure'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
