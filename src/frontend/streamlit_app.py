@@ -703,6 +703,85 @@ def get_enhanced_css() -> str:
                 transition-duration: 0.01ms !important;
             }}
         }}
+
+        /* CEO Executive Styling */
+        .ceo-badge {{
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: var(--finsolve-deep-blue);
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            margin: 0.5rem 0;
+            border: 2px solid #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+
+        .ceo-header {{
+            background: linear-gradient(135deg, var(--finsolve-deep-blue) 0%, #1a2332 100%);
+            border: 3px solid var(--finsolve-teal);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 245, 212, 0.2);
+        }}
+
+        .ceo-welcome {{
+            color: var(--finsolve-teal);
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-family: var(--font-primary);
+        }}
+
+        .ceo-subtitle {{
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            opacity: 0.9;
+            font-family: var(--font-secondary);
+        }}
+
+        .executive-dashboard {{
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 249, 250, 0.95) 100%);
+            border: 2px solid var(--finsolve-teal);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: 0 8px 25px rgba(0, 245, 212, 0.15);
+        }}
+
+        .executive-metric {{
+            background: linear-gradient(135deg, var(--finsolve-deep-blue) 0%, #1a2332 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 0.5rem;
+            box-shadow: 0 4px 15px rgba(13, 27, 42, 0.3);
+            border: 1px solid var(--finsolve-teal);
+        }}
+
+        .executive-metric-value {{
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--finsolve-teal);
+            margin-bottom: 0.5rem;
+            font-family: var(--font-primary);
+        }}
+
+        .executive-metric-label {{
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
     </style>
     """
 
@@ -900,10 +979,10 @@ class FinSolveAIAssistant:
         st.markdown("*Choose your role for instant access*")
 
         demo_users = [
-            {"username": "ceo.finsolve", "password": "CEO123!", "role": "Chief Executive Officer", "icon": "👑"},
+            {"username": "ceo.finsolve", "password": "CEOPass123!", "role": "Chief Executive Officer", "icon": "👑"},
             {"username": "admin", "password": "Admin123!", "role": "System Administrator", "icon": "🔧"},
             {"username": "peter.pandey", "password": "Engineering123!", "role": "AI Engineer", "icon": "⚙️"},
-            {"username": "jane.smith", "password": "HR123!", "role": "HR Manager", "icon": "👥"},
+            {"username": "jane.smith", "password": "HRpass123!", "role": "HR Manager", "icon": "👥"},
             {"username": "mike.johnson", "password": "Finance123!", "role": "Finance Analyst", "icon": "💰"},
             {"username": "sarah.wilson", "password": "Marketing123!", "role": "Marketing Manager", "icon": "📈"},
             {"username": "john.doe", "password": "Employee123!", "role": "Employee", "icon": "👤"}
@@ -1566,8 +1645,8 @@ class FinSolveAIAssistant:
             "finance": ["revenue_analysis", "expense_report", "budget_status", "financial_trends"],
             "marketing": ["campaign_analytics", "market_research", "customer_insights", "marketing_policies"],
             "engineering": ["system_architecture", "technical_docs", "development_process", "security_protocols"],
-            "c_level": ["employee_overview", "performance_data", "training_status", "hr_policies", "leave_application",
-                       "revenue_analysis", "expense_report", "budget_status", "financial_trends",
+            "ceo": ["employee_overview", "performance_data", "training_status", "hr_policies", "leave_application",
+                   "revenue_analysis", "expense_report", "budget_status", "financial_trends",
                        "campaign_analytics", "market_research", "customer_insights", "marketing_policies",
                        "system_architecture", "technical_docs", "development_process", "security_protocols"]
         }
@@ -3238,7 +3317,7 @@ FinSolve HR Team
 
             with col1:
                 # Department selection (restricted to user's department unless admin)
-                if user_role == 'c_level':
+                if user_role == 'ceo':
                     department = st.selectbox(
                         "Department",
                         ["Engineering", "Finance", "HR", "Marketing", "General"],
@@ -3363,7 +3442,7 @@ FinSolve HR Team
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            if user_role == 'c_level':
+            if user_role == 'ceo':
                 dept_filter = st.selectbox(
                     "Filter by Department",
                     ["All", "Engineering", "Finance", "HR", "Marketing", "General"]
@@ -3556,7 +3635,7 @@ FinSolve HR Team
         """Display enhanced welcome message."""
         user = st.session_state.user_info
         role_suggestions = {
-            "c_level": "strategic insights, executive summaries, and company performance metrics",
+            "ceo": "strategic insights, executive summaries, and company performance metrics",
             "hr": "employee analytics, performance data, and HR policy information",
             "finance": "financial reports, budget analysis, and expense tracking",
             "marketing": "campaign performance, customer insights, and market analytics",
@@ -3565,35 +3644,63 @@ FinSolve HR Team
         }
         
         suggestion = role_suggestions.get(user['role'].lower(), "comprehensive business insights")
-        
-        st.markdown(f"""
-        <div class="welcome-container">
-            <div class="welcome-emoji">🤖</div>
-            <h2 class="welcome-title">Ready to Assist You!</h2>
-            <p class="welcome-description">
-                I'm your <strong style="color: var(--finsolve-deep-blue); background: var(--gradient-secondary);
-                padding: 0.2rem 0.6rem; border-radius: 8px; color: white;">FinSolve AI Expert</strong>, 
-                specialized in {suggestion}.
-            </p>
-            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                <div class="feature-tag">
-                    <span>📊 Advanced Analytics</span>
+
+        # CEO gets special welcome styling
+        if user['role'].lower() == 'ceo':
+            st.markdown(f"""
+            <div class="executive-dashboard">
+                <div class="ceo-welcome">👑 Executive Command Center</div>
+                <div class="ceo-subtitle">
+                    Strategic oversight and comprehensive business intelligence at your fingertips
                 </div>
-                <div class="feature-tag">
-                    <span>💰 Financial Intelligence</span>
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
+                    <div class="feature-tag">
+                        <span>📊 Executive Analytics</span>
+                    </div>
+                    <div class="feature-tag">
+                        <span>💰 Financial Intelligence</span>
+                    </div>
+                    <div class="feature-tag">
+                        <span>👥 Organizational Insights</span>
+                    </div>
+                    <div class="feature-tag">
+                        <span>🎯 Strategic Planning</span>
+                    </div>
                 </div>
-                <div class="feature-tag">
-                    <span>👥 HR Insights</span>
-                </div>
-                <div class="feature-tag">
-                    <span>🚀 Real-time Data</span>
-                </div>
+                <p style="color: var(--finsolve-deep-blue); font-size: 1.2rem; margin-top: 2rem; font-weight: 600; text-align: center;">
+                    💡 Access all departments and strategic insights through the sidebar or by asking questions!
+                </p>
             </div>
-            <p style="color: var(--finsolve-dark-grey); font-size: 1.1rem; margin-top: 2rem; font-weight: 600;">
-                💡 Start by typing a question or using the quick actions sidebar!
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div class="welcome-container">
+                <div class="welcome-emoji">🤖</div>
+                <h2 class="welcome-title">Ready to Assist You!</h2>
+                <p class="welcome-description">
+                    I'm your <strong style="color: var(--finsolve-deep-blue); background: var(--gradient-secondary);
+                    padding: 0.2rem 0.6rem; border-radius: 8px; color: white;">FinSolve AI Expert</strong>,
+                    specialized in {suggestion}.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
+                    <div class="feature-tag">
+                        <span>📊 Advanced Analytics</span>
+                    </div>
+                    <div class="feature-tag">
+                        <span>💰 Financial Intelligence</span>
+                    </div>
+                    <div class="feature-tag">
+                        <span>👥 HR Insights</span>
+                    </div>
+                    <div class="feature-tag">
+                        <span>🚀 Real-time Data</span>
+                    </div>
+                </div>
+                <p style="color: var(--finsolve-dark-grey); font-size: 1.1rem; margin-top: 2rem; font-weight: 600;">
+                    💡 Start by typing a question or using the quick actions sidebar!
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
     
     def display_user_analytics(self):
         """Display enhanced user session analytics."""
@@ -3636,7 +3743,7 @@ FinSolve HR Team
         
         # Role-specific quick actions with proper access control
         role_actions = {
-            "c_level": [
+            "ceo": [
                 {"icon": "📊", "label": "Executive Dashboard", "type": "dashboard", "dashboard_type": "executive"},
                 {"icon": "💰", "label": "Financial Overview", "type": "dashboard", "dashboard_type": "financial"},
                 {"icon": "🎯", "label": "Strategic Goals", "query": "How are we performing against strategic objectives?"},
@@ -3719,22 +3826,39 @@ FinSolve HR Team
             user = st.session_state.user_info
             role_config = ROLE_CONFIG.get(user['role'].lower(), ROLE_CONFIG['employee'])
             
-            st.markdown(f"""
-            <div class="sidebar-section">
-                <div style="text-align: center;">
-                    <div style="font-size: 3.5rem; margin-bottom: 1rem;">{role_config['icon']}</div>
-                    <h3 style="margin: 0; color: var(--finsolve-deep-blue); font-family: var(--font-primary);">{user['full_name']}</h3>
-                    <div style="background: {role_config['color']}; color: white; padding: 0.4rem 1rem;
-                                border-radius: 20px; font-size: 0.9rem; font-weight: 600;
-                                display: inline-block; margin: 0.8rem 0; box-shadow: var(--shadow-light);">
-                        {user['role'].replace('_', ' ').title()}
+            # CEO gets special styling
+            if user['role'].lower() == 'ceo':
+                st.markdown(f"""
+                <div class="sidebar-section ceo-header">
+                    <div style="text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));">{role_config['icon']}</div>
+                        <h3 style="margin: 0; color: var(--finsolve-teal); font-family: var(--font-primary); font-size: 1.4rem;">{user['full_name']}</h3>
+                        <div class="ceo-badge">
+                            {user['role'].replace('_', ' ').title()}
+                        </div>
+                        <p style="margin: 0.5rem 0; color: rgba(255, 255, 255, 0.8); font-size: 1rem; font-weight: 500;">
+                            Executive Leadership
+                        </p>
                     </div>
-                    <p style="margin: 0.5rem 0; color: var(--finsolve-dark-grey); font-size: 0.95rem;">
-                        {user.get('department', 'General')} Department
-                    </p>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="sidebar-section">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3.5rem; margin-bottom: 1rem;">{role_config['icon']}</div>
+                        <h3 style="margin: 0; color: var(--finsolve-deep-blue); font-family: var(--font-primary);">{user['full_name']}</h3>
+                        <div style="background: {role_config['color']}; color: white; padding: 0.4rem 1rem;
+                                    border-radius: 20px; font-size: 0.9rem; font-weight: 600;
+                                    display: inline-block; margin: 0.8rem 0; box-shadow: var(--shadow-light);">
+                            {user['role'].replace('_', ' ').title()}
+                        </div>
+                        <p style="margin: 0.5rem 0; color: var(--finsolve-dark-grey); font-size: 0.95rem;">
+                            {user.get('department', 'General')} Department
+                        </p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
             
             # Action buttons
             col1, col2 = st.columns(2)
@@ -3795,7 +3919,7 @@ FinSolve HR Team
 
             # Document management for authorized users
             user_role = st.session_state.user_info.get('role', 'employee').lower()
-            if user_role in ['hr', 'finance', 'marketing', 'engineering', 'c_level']:
+            if user_role in ['hr', 'finance', 'marketing', 'engineering', 'ceo']:
                 st.markdown("---")
                 st.markdown("### 📁 Document Management")
 

@@ -21,9 +21,11 @@ from .config import settings
 try:
     import openai
     OPENAI_AVAILABLE = True
+    logger.info(f"OpenAI library available (version: {getattr(openai, '__version__', 'unknown')})")
 except ImportError:
     OPENAI_AVAILABLE = False
     openai = None
+    logger.info("OpenAI library not available - using Euri API only")
 
 # Try to import Euriai LangChain
 try:
@@ -76,8 +78,23 @@ class DualAPIClient:
         self.openai_client = None
         if OPENAI_AVAILABLE and self.openai_api_key:
             try:
-                self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
+                # Try with minimal parameters to avoid version compatibility issues
+                self.openai_client = openai.OpenAI(
+                    api_key=self.openai_api_key,
+                    timeout=settings.openai_timeout
+                )
                 logger.info("OpenAI client initialized successfully")
+            except TypeError as e:
+                # Handle version compatibility issues
+                if "proxies" in str(e) or "unexpected keyword argument" in str(e):
+                    try:
+                        # Fallback to basic initialization
+                        self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
+                        logger.info("OpenAI client initialized with fallback method")
+                    except Exception as fallback_e:
+                        logger.warning(f"Failed to initialize OpenAI client (fallback): {str(fallback_e)}")
+                else:
+                    logger.warning(f"Failed to initialize OpenAI client: {str(e)}")
             except Exception as e:
                 logger.warning(f"Failed to initialize OpenAI client: {str(e)}")
         

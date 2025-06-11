@@ -91,7 +91,7 @@ def require_role(required_role: UserRole):
     Dependency factory to require specific user role
     """
     def role_checker(current_user: User = Depends(get_current_active_user)) -> User:
-        if current_user.role != required_role and current_user.role != UserRole.C_LEVEL:
+        if current_user.role != required_role and current_user.role != UserRole.CEO:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access denied. Required role: {required_role.value}"
@@ -106,7 +106,7 @@ def require_roles(required_roles: list[UserRole]):
     Dependency factory to require one of multiple roles
     """
     def roles_checker(current_user: User = Depends(get_current_active_user)) -> User:
-        if current_user.role not in required_roles and current_user.role != UserRole.C_LEVEL:
+        if current_user.role not in required_roles and current_user.role != UserRole.CEO:
             role_names = [role.value for role in required_roles]
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -178,8 +178,8 @@ class RoleBasedAccess:
         self.require_own_data = require_own_data
     
     def __call__(self, current_user: User = Depends(get_current_active_user)) -> User:
-        # C-level always has access
-        if current_user.role == UserRole.C_LEVEL:
+        # CEO always has access
+        if current_user.role == UserRole.CEO:
             return current_user
         
         # Check role access
@@ -217,7 +217,7 @@ def validate_session_access(session_id: str):
             )
         
         # Check if user owns the session or has admin privileges
-        if session.user_id != current_user.id and current_user.role != UserRole.C_LEVEL:
+        if session.user_id != current_user.id and current_user.role != UserRole.CEO:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to this session"
@@ -254,8 +254,8 @@ class DataAccessValidator:
     ) -> bool:
         """Validate access to employee data"""
         
-        # C-level and HR have full access
-        if user.role in [UserRole.C_LEVEL, UserRole.HR]:
+        # CEO and HR have full access
+        if user.role in [UserRole.CEO, UserRole.HR]:
             return True
         
         # Users can access their own data
@@ -268,7 +268,7 @@ class DataAccessValidator:
     @staticmethod
     def validate_financial_data_access(user: User) -> bool:
         """Validate access to financial data"""
-        return user.role in [UserRole.C_LEVEL, UserRole.FINANCE]
+        return user.role in [UserRole.CEO, UserRole.FINANCE]
     
     @staticmethod
     def validate_marketing_data_access(user: User) -> bool:
@@ -318,9 +318,9 @@ require_hr_access = require_role(UserRole.HR)
 require_finance_access = require_role(UserRole.FINANCE)
 require_marketing_access = require_role(UserRole.MARKETING)
 require_engineering_access = require_role(UserRole.ENGINEERING)
-require_admin_access = require_role(UserRole.C_LEVEL)
+require_admin_access = require_role(UserRole.CEO)
 
-require_hr_or_admin = require_roles([UserRole.HR, UserRole.C_LEVEL])
-require_finance_or_admin = require_roles([UserRole.FINANCE, UserRole.C_LEVEL])
-require_marketing_or_admin = require_roles([UserRole.MARKETING, UserRole.C_LEVEL])
-require_engineering_or_admin = require_roles([UserRole.ENGINEERING, UserRole.C_LEVEL])
+require_hr_or_admin = require_roles([UserRole.HR, UserRole.CEO])
+require_finance_or_admin = require_roles([UserRole.FINANCE, UserRole.CEO])
+require_marketing_or_admin = require_roles([UserRole.MARKETING, UserRole.CEO])
+require_engineering_or_admin = require_roles([UserRole.ENGINEERING, UserRole.CEO])

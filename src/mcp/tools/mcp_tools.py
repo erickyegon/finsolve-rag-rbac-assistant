@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional, Type
 from datetime import datetime
 
 from langchain.tools import BaseTool
-from langchain.callbacks.manager import CallbackManagerForToolUse
+# from langchain.callbacks.manager import CallbackManagerForToolUse  # Commented out - not available in current version
 from pydantic import BaseModel, Field
 from loguru import logger
 
@@ -40,7 +40,7 @@ class MCPQueryTool(BaseTool):
         user_role: str,
         department: Optional[str] = None,
         additional_params: Optional[Dict[str, Any]] = None,
-        run_manager: Optional[CallbackManagerForToolUse] = None,
+        run_manager: Optional[Any] = None,
     ) -> str:
         """Execute the MCP query synchronously"""
         try:
@@ -66,7 +66,7 @@ class MCPQueryTool(BaseTool):
         user_role: str,
         department: Optional[str] = None,
         additional_params: Optional[Dict[str, Any]] = None,
-        run_manager: Optional[CallbackManagerForToolUse] = None,
+        run_manager: Optional[Any] = None,
     ) -> str:
         """Execute the MCP query asynchronously"""
         try:

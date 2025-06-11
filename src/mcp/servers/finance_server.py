@@ -364,7 +364,7 @@ class FinanceMCPServer:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (FINANCE, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (FINANCE, CEO, etc.)"},
                         "quarter": {"type": "string", "description": "Optional quarter (1-4)"},
                         "year": {"type": "integer", "description": "Optional year"}
                     },
@@ -377,7 +377,7 @@ class FinanceMCPServer:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (FINANCE, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (FINANCE, CEO, etc.)"},
                         "category": {"type": "string", "description": "Optional expense category"},
                         "time_period": {"type": "string", "description": "Optional time period"}
                     },
@@ -390,7 +390,7 @@ class FinanceMCPServer:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (FINANCE, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (FINANCE, CEO, etc.)"},
                         "department": {"type": "string", "description": "Optional department filter"}
                     },
                     "required": ["user_role"]
@@ -402,7 +402,7 @@ class FinanceMCPServer:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (FINANCE, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (FINANCE, CEO, etc.)"},
                         "metric_type": {"type": "string", "description": "Optional metric type"}
                     },
                     "required": ["user_role"]

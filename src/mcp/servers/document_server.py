@@ -49,7 +49,7 @@ class DocumentMCPServer:
                 
                 # Apply department filter based on user role
                 user_dept = self._get_user_department(user_role)
-                if user_role.upper() not in ['C_LEVEL'] and department and department != user_dept:
+                if user_role.upper() not in ['CEO'] and department and department != user_dept:
                     return json.dumps({
                         "error": f"Access denied: Cannot search documents in {department} department",
                         "allowed_department": user_dept
@@ -97,7 +97,7 @@ class DocumentMCPServer:
                 doc_department = doc_metadata.get('department')
                 user_dept = self._get_user_department(user_role)
                 
-                if user_role.upper() not in ['C_LEVEL'] and doc_department != user_dept:
+                if user_role.upper() not in ['CEO'] and doc_department != user_dept:
                     return json.dumps({
                         "error": f"Access denied: Document belongs to {doc_department} department",
                         "user_department": user_dept
@@ -132,8 +132,8 @@ class DocumentMCPServer:
                 
                 # Apply department filter based on user role
                 user_dept = self._get_user_department(user_role)
-                if user_role.upper() not in ['C_LEVEL']:
-                    # Non-C_LEVEL users can only see their department's documents
+                if user_role.upper() not in ['CEO', 'SYSTEM_ADMIN']:
+                    # Non-CEO users can only see their department's documents
                     department = user_dept
                 
                 # Get document list
@@ -183,7 +183,7 @@ class DocumentMCPServer:
                 doc_department = doc_metadata.get('department')
                 user_dept = self._get_user_department(user_role)
                 
-                if user_role.upper() not in ['C_LEVEL'] and doc_department != user_dept:
+                if user_role.upper() not in ['CEO'] and doc_department != user_dept:
                     return json.dumps({
                         "error": f"Access denied: Document belongs to {doc_department} department",
                         "user_department": user_dept
@@ -230,7 +230,7 @@ class DocumentMCPServer:
             "FINANCE": "Finance", 
             "MARKETING": "Marketing",
             "ENGINEERING": "Engineering",
-            "C_LEVEL": "All",  # C_LEVEL can access all departments
+            "CEO": "All",  # CEO can access all departments
             "EMPLOYEE": "General"
         }
         
@@ -243,7 +243,7 @@ class DocumentMCPServer:
             base_fields = ['document_id', 'filename', 'department', 'document_type', 'size', 'modified']
             
             # Additional fields for authorized roles
-            if user_role.upper() in ['HR', 'FINANCE', 'MARKETING', 'ENGINEERING', 'C_LEVEL']:
+            if user_role.upper() in ['HR', 'FINANCE', 'MARKETING', 'ENGINEERING', 'CEO']:
                 additional_fields = ['upload_date', 'uploaded_by', 'content_length', 'tags']
                 allowed_fields = base_fields + additional_fields
             else:

@@ -48,9 +48,12 @@ async def register_new_employee(
         # Map role string to UserRole enum
         role_mapping = {
             "Employee": UserRole.EMPLOYEE,
-            "Manager": UserRole.MANAGER,
-            "Director": UserRole.DIRECTOR,
-            "C-Level Executive": UserRole.C_LEVEL
+            "HR": UserRole.HR,
+            "Finance": UserRole.FINANCE,
+            "Marketing": UserRole.MARKETING,
+            "Engineering": UserRole.ENGINEERING,
+            "CEO": UserRole.CEO,
+            "System Admin": UserRole.SYSTEM_ADMIN
         }
 
         user_role = role_mapping.get(registration_data.role, UserRole.EMPLOYEE)
@@ -349,8 +352,8 @@ async def update_current_user(
         if user_update.department is not None:
             current_user.department = user_update.department
         
-        # Only admins can change roles and active status
-        if current_user.role == UserRole.C_LEVEL:
+        # Only CEO can change roles and active status
+        if current_user.role == UserRole.CEO:
             if user_update.role is not None:
                 current_user.role = user_update.role
             
@@ -417,7 +420,7 @@ async def invalidate_session(
             )
         
         # Check if user owns the session or is admin
-        if session.user_id != current_user.id and current_user.role != UserRole.C_LEVEL:
+        if session.user_id != current_user.id and current_user.role != UserRole.CEO:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied"

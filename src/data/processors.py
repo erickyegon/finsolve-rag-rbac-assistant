@@ -175,7 +175,7 @@ class DataProcessor:
     
     def _get_access_roles(self, department: Department) -> List[UserRole]:
         """Get roles that can access department data"""
-        access_roles = [UserRole.C_LEVEL]  # C-level always has access
+        access_roles = [UserRole.CEO]  # CEO always has access
         
         # Add department-specific roles
         if department == Department.HR:
@@ -382,7 +382,7 @@ class DataProcessor:
                     df = df.drop(columns=[field])
         
         # Apply department-specific filtering
-        if department == Department.HR and user_role != UserRole.HR and user_role != UserRole.C_LEVEL:
+        if department == Department.HR and user_role != UserRole.HR and user_role != UserRole.CEO:
             # Non-HR users can only see basic employee info
             allowed_columns = ["employee_id", "full_name", "role", "department", "email"]
             df = df[[col for col in allowed_columns if col in df.columns]]

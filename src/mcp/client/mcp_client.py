@@ -185,7 +185,7 @@ class MCPClient:
                 "FINANCE": ["finance_", "document_"],  # Finance can access all finance and document tools
                 "MARKETING": ["document_"],  # Marketing can access document tools
                 "ENGINEERING": ["document_"],  # Engineering can access document tools
-                "C_LEVEL": ["hr_", "finance_", "document_"]  # C_LEVEL can access all tools
+                "CEO": ["hr_", "finance_", "document_"]  # CEO can access all tools
             }
             
             allowed_prefixes = role_tool_access.get(user_role.upper(), [])
@@ -241,7 +241,7 @@ class MCPClient:
             
             # HR-related queries
             if any(keyword in query_lower for keyword in ["employee", "staff", "hr", "performance", "leave", "attendance"]):
-                if user_role.upper() in ["HR", "C_LEVEL"]:
+                if user_role.upper() in ["HR", "CEO"]:
                     if "count" in query_lower or "how many" in query_lower:
                         tools_to_call.append({
                             "tool": "hr_get_employee_count",
@@ -260,7 +260,7 @@ class MCPClient:
             
             # Finance-related queries
             if any(keyword in query_lower for keyword in ["finance", "budget", "expense", "revenue", "financial", "quarterly"]):
-                if user_role.upper() in ["FINANCE", "C_LEVEL"]:
+                if user_role.upper() in ["FINANCE", "CEO"]:
                     if "quarterly" in query_lower or "report" in query_lower:
                         tools_to_call.append({
                             "tool": "finance_get_quarterly_report",

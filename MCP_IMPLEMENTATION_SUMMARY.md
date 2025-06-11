@@ -30,13 +30,13 @@ The FinSolve AI Assistant now uses **true MCP (Model Context Protocol)** integra
 #### **HR MCP Server** (`src/mcp/servers/hr_server.py`)
 - **Tools:** `get_employee_count`, `get_employee_details`, `get_performance_metrics`, `get_leave_summary`
 - **Data Sources:** HR CSV data, employee records, performance metrics
-- **Access Control:** Role-based permissions (HR, C_LEVEL)
+- **Access Control:** Role-based permissions (HR, CEO)
 - **Features:** Department filtering, performance analysis, leave tracking
 
 #### **Finance MCP Server** (`src/mcp/servers/finance_server.py`)
 - **Tools:** `get_quarterly_report`, `get_expense_analysis`, `get_budget_status`, `get_revenue_metrics`
 - **Data Sources:** Financial reports, expense data, budget information
-- **Access Control:** Role-based permissions (FINANCE, C_LEVEL)
+- **Access Control:** Role-based permissions (FINANCE, CEO)
 - **Features:** Quarterly analysis, expense categorization, budget variance
 
 #### **Document MCP Server** (`src/mcp/servers/document_server.py`)
@@ -125,14 +125,14 @@ def query_vector_database(self, query: str, user_role: str = "employee", departm
 
 | Tool Name | Server | Description | Access Level |
 |-----------|--------|-------------|--------------|
-| `hr_get_employee_count` | HR | Get employee count by department | HR, C_LEVEL |
-| `hr_get_employee_details` | HR | Get detailed employee information | HR, C_LEVEL |
-| `hr_get_performance_metrics` | HR | Get performance metrics and analysis | HR, C_LEVEL |
-| `hr_get_leave_summary` | HR | Get leave balance and usage summary | HR, C_LEVEL |
-| `finance_get_quarterly_report` | Finance | Get quarterly financial reports | FINANCE, C_LEVEL |
-| `finance_get_expense_analysis` | Finance | Get expense analysis and breakdown | FINANCE, C_LEVEL |
-| `finance_get_budget_status` | Finance | Get budget status and variance | FINANCE, C_LEVEL |
-| `finance_get_revenue_metrics` | Finance | Get revenue metrics and growth | FINANCE, C_LEVEL |
+| `hr_get_employee_count` | HR | Get employee count by department | HR, CEO |
+| `hr_get_employee_details` | HR | Get detailed employee information | HR, CEO |
+| `hr_get_performance_metrics` | HR | Get performance metrics and analysis | HR, CEO |
+| `hr_get_leave_summary` | HR | Get leave balance and usage summary | HR, CEO |
+| `finance_get_quarterly_report` | Finance | Get quarterly financial reports | FINANCE, CEO |
+| `finance_get_expense_analysis` | Finance | Get expense analysis and breakdown | FINANCE, CEO |
+| `finance_get_budget_status` | Finance | Get budget status and variance | FINANCE, CEO |
+| `finance_get_revenue_metrics` | Finance | Get revenue metrics and growth | FINANCE, CEO |
 | `document_search_documents` | Document | Search documents with filters | All authenticated users |
 | `document_get_document_content` | Document | Get specific document content | All authenticated users |
 | `document_list_documents` | Document | List available documents | All authenticated users |
@@ -151,7 +151,7 @@ def query_vector_database(self, query: str, user_role: str = "employee", departm
 | **Finance** | ❌ | ✅ | ✅ (Finance documents) | Department |
 | **Marketing** | ❌ | ❌ | ✅ (Marketing documents) | Department |
 | **Engineering** | ❌ | ❌ | ✅ (Engineering documents) | Department |
-| **C_LEVEL** | ✅ | ✅ | ✅ (All documents) | Full Access |
+| **CEO** | ✅ | ✅ | ✅ (All documents) | Full Access |
 
 ---
 

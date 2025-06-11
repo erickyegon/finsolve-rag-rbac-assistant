@@ -220,9 +220,18 @@ def create_default_users():
             "email": "admin@finsolve.com",
             "full_name": "System Administrator",
             "password": "Admin123!",
-            "role": UserRole.C_LEVEL,
+            "role": UserRole.SYSTEM_ADMIN,
             "department": "IT",
             "employee_id": "ADMIN001"
+        },
+        {
+            "username": "ceo.finsolve",
+            "email": "ceo@finsolve.com",
+            "full_name": "Dr. Erick K. Yegon",
+            "password": "CEOPass123!",
+            "role": UserRole.CEO,
+            "department": "Executive",
+            "employee_id": "CEO001"
         },
         {
             "username": "john.doe",

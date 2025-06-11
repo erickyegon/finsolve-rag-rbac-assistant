@@ -310,7 +310,7 @@ class HRMCPServer:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (HR, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (HR, CEO, etc.)"},
                         "department": {"type": "string", "description": "Optional department filter"}
                     },
                     "required": ["user_role"]
@@ -335,7 +335,7 @@ class HRMCPServer:
                 inputSchema={
                     "type": "object", 
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (HR, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (HR, CEO, etc.)"},
                         "department": {"type": "string", "description": "Optional department filter"}
                     },
                     "required": ["user_role"]
@@ -347,7 +347,7 @@ class HRMCPServer:
                 inputSchema={
                     "type": "object",
                     "properties": {
-                        "user_role": {"type": "string", "description": "User role (HR, C_LEVEL, etc.)"},
+                        "user_role": {"type": "string", "description": "User role (HR, CEO, etc.)"},
                         "department": {"type": "string", "description": "Optional department filter"}
                     },
                     "required": ["user_role"]
