@@ -158,12 +158,20 @@ if __name__ == "__main__":
         try:
             logger.info(f"Starting Streamlit app on {settings.streamlit_host}:{settings.streamlit_port}")
 
+            # Check if Streamlit is installed
+            try:
+                import streamlit
+                logger.info(f"Streamlit version: {streamlit.__version__}")
+            except ImportError:
+                raise Exception("Streamlit is not installed. Please run: pip install streamlit")
+
             # Prepare environment
             env = os.environ.copy()
             env["PYTHONPATH"] = str(Path(__file__).parent)
             env["PYTHONUNBUFFERED"] = "1"
 
-            self.streamlit_process = subprocess.Popen([
+            # Build command
+            cmd = [
                 sys.executable, "-m", "streamlit", "run",
                 "src/frontend/streamlit_app.py",
                 "--server.address", settings.streamlit_host,
@@ -172,16 +180,31 @@ if __name__ == "__main__":
                 "--browser.gatherUsageStats", "false",
                 "--server.enableCORS", "false",
                 "--server.enableXsrfProtection", "false"
-            ], env=env, cwd=Path(__file__).parent,
-               creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform.startswith('win') else 0)
+            ]
 
-            # Wait for app to start
-            time.sleep(5)
+            logger.info(f"Streamlit command: {' '.join(cmd)}")
+
+            self.streamlit_process = subprocess.Popen(
+                cmd,
+                env=env,
+                cwd=Path(__file__).parent,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform.startswith('win') else 0
+            )
+
+            # Wait for app to start and check for errors
+            time.sleep(8)
 
             if self.streamlit_process.poll() is None:
                 logger.info("Streamlit app started successfully")
+                logger.info(f"🎨 Streamlit App: http://{settings.streamlit_host}:{settings.streamlit_port}")
             else:
-                raise Exception("Streamlit app failed to start")
+                # Process has terminated, get error output
+                stdout, stderr = self.streamlit_process.communicate()
+                error_msg = f"Streamlit process terminated. STDOUT: {stdout.decode()}, STDERR: {stderr.decode()}"
+                logger.error(error_msg)
+                raise Exception(f"Streamlit app failed to start: {error_msg}")
 
         except Exception as e:
             logger.error(f"Failed to start Streamlit app: {str(e)}")

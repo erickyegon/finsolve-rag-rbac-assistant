@@ -252,8 +252,11 @@ class ChatMessage(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """Chat response model"""
+    """Enhanced chat response model with structured content"""
     content: str
+    short_answer: Optional[str] = None  # Quick, direct answer
+    detailed_response: Optional[str] = None  # Comprehensive analysis
+    summary: Optional[str] = None  # Key takeaways
     message_type: str = "assistant"
     session_id: str
     retrieved_documents: Optional[List[str]] = None
@@ -261,6 +264,7 @@ class ChatResponse(BaseModel):
     processing_time: Optional[float] = None
     timestamp: datetime
     visualization: Optional[Dict[str, Any]] = None
+    conversation_context: Optional[str] = None  # Previous conversation context
 
 
 class SessionInfo(BaseModel):

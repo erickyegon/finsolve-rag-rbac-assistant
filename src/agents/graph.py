@@ -58,14 +58,18 @@ class AgentState(TypedDict):
 
 @dataclass
 class ChatbotResponse:
-    """Structured response from the chatbot"""
+    """Enhanced structured response from the chatbot"""
     content: str
+    short_answer: str  # Quick, direct answer
+    detailed_response: str  # Comprehensive analysis
+    summary: str  # Key takeaways
     sources: List[str]
     confidence_score: float
     processing_time: float
     query_type: QueryType
     metadata: Dict[str, Any]
     visualization: Optional[Dict[str, Any]] = None
+    conversation_context: Optional[str] = None  # Previous conversation context
 
 
 class QueryClassifier:
@@ -602,10 +606,18 @@ class FinSolveAgent:
             logger.error(f"Failed to serialize chart: {str(e)}")
             return None
 
-    def _generate_fallback_response(self, state: AgentState, context: str) -> str:
+    def _generate_fallback_response(self, state: AgentState, context) -> str:
         """Generate a fallback response when API is unavailable"""
         query = state["query"].lower()
         user_role = state["user"]["role"]
+
+        # Handle both string and dict context
+        if isinstance(context, dict):
+            data_context = context.get("data", "")
+            conversation_history = context.get("conversation_history", "")
+        else:
+            data_context = str(context)
+            conversation_history = ""
 
         # Role-based responses
         if "finsolve" in query or "company" in query:
@@ -944,27 +956,60 @@ Please try rephrasing your question or contact support if the issue persists."""
 
         return query
     
-    def _prepare_context(self, state: AgentState) -> str:
-        """Prepare context string for LLM"""
+    def _prepare_context(self, state: AgentState) -> Dict[str, str]:
+        """Prepare context dictionary for LLM with conversation history"""
         context_parts = []
-        
+
         # Add structured data results
         if state.get("structured_results") and state["structured_results"]["success"]:
             context_parts.append("STRUCTURED DATA RESULTS:")
             context_parts.append(json.dumps(state["structured_results"]["data"], indent=2))
-        
+
         # Add document results
         if state.get("document_results"):
             context_parts.append("\nDOCUMENT SEARCH RESULTS:")
             for i, doc in enumerate(state["document_results"][:3], 1):  # Top 3 results
                 context_parts.append(f"\nDocument {i} (Score: {doc['similarity_score']:.3f}):")
                 context_parts.append(doc["content"][:500] + "..." if len(doc["content"]) > 500 else doc["content"])
-        
-        return "\n".join(context_parts)
+
+        # Prepare context dictionary
+        return {
+            "conversation_history": state.get("context", {}).get("conversation_history", ""),
+            "data": "\n".join(context_parts) if context_parts else "No specific data retrieved."
+        }
     
     def _create_system_prompt(self, user_role: str) -> str:
-        """Create comprehensive system prompt for detailed responses"""
-        return f"""You are FinSolve AI, the intelligent assistant for FinSolve Technologies, a leading financial technology company. You are helping a user with the role: {user_role}.
+        """Create enhanced system prompt for conversational, structured responses"""
+        return f"""You are FinSolve AI, the intelligent conversational assistant for FinSolve Technologies, a leading financial technology company. You are helping a user with the role: {user_role}.
+
+CONVERSATION STYLE:
+- Be conversational, friendly, and professional
+- Reference previous conversation when relevant
+- Acknowledge follow-up questions naturally
+- Use the user's context to provide personalized responses
+
+RESPONSE STRUCTURE - ALWAYS organize your response as follows:
+
+## Short Answer
+Provide a direct, concise answer to the question (1-2 sentences maximum). Be accurate and specific.
+
+## Detailed Analysis
+Provide comprehensive information including:
+- Full context and background
+- Specific data, numbers, and metrics when available
+- Step-by-step explanations when appropriate
+- Relevant examples and comparisons
+- Strategic implications for the user's role
+
+## Summary
+Highlight 2-3 key takeaways or action items from your response.
+
+CHART GENERATION:
+When your response includes numerical data, trends, comparisons, or financial metrics, automatically suggest or describe relevant visualizations such as:
+- Bar charts for comparisons
+- Line charts for trends over time
+- Pie charts for distributions
+- Tables for detailed breakdowns
 
 RESPONSE STYLE - BE COMPREHENSIVE AND DETAILED:
 1. Provide VERBOSE, comprehensive responses with extensive detail and context
@@ -1008,31 +1053,73 @@ ROLE-SPECIFIC GUIDANCE for {user_role}:
 Remember: Provide detailed, data-rich, comprehensive responses that demonstrate deep knowledge of FinSolve Technologies. Use all available context to give thorough, informative answers."""
     
     def _create_user_prompt(self, query: str, context: str) -> str:
-        """Create detailed user prompt encouraging comprehensive responses"""
-        return f"""User Question: {query}
+        """Create enhanced user prompt with conversation context"""
+        # Handle both string and dict context
+        if isinstance(context, dict):
+            conversation_history = context.get("conversation_history", "")
+            data_context = context.get("data", "")
+        else:
+            conversation_history = ""
+            data_context = context
 
-Available Context and Data:
-{context}
+        prompt_parts = []
 
-INSTRUCTIONS FOR COMPREHENSIVE RESPONSE:
-1. Provide a DETAILED, VERBOSE response using ALL available context and data
-2. Include specific numbers, percentages, financial figures, and metrics from the context
-3. Structure your response with clear headers and comprehensive bullet points
-4. Give thorough explanations with background context and implications
-5. Include relevant examples, comparisons, and trends from the data
-6. Reference specific documents, reports, and data sources mentioned in the context
-7. Provide actionable insights and strategic implications based on the information
-8. If any information is missing, clearly specify what additional data would be helpful
+        # Add conversation context if available
+        if conversation_history:
+            prompt_parts.append(f"""Previous Conversation:
+{conversation_history}
 
-FORMAT YOUR RESPONSE WITH:
-- Clear section headers (use ## and ###)
-- Comprehensive bullet points with specific details
-- Exact numbers, percentages, and financial data
-- Relevant timeframes and comparative analysis
-- Strategic context and operational implications
+""")
 
-Remember: Use ALL available context to provide the most comprehensive, detailed response possible. Don't summarize - provide full detail and analysis."""
+        prompt_parts.append(f"""Current Question: {query}
+
+Available Data and Context:
+{data_context}
+
+INSTRUCTIONS FOR STRUCTURED RESPONSE:
+1. Be conversational and reference previous discussion when relevant
+2. ALWAYS structure your response with these exact sections:
+   ## Short Answer
+   ## Detailed Analysis
+   ## Summary
+3. Include specific data points, numbers, and metrics when available
+4. For numerical data or trends, suggest appropriate charts or visualizations
+5. Provide actionable insights relevant to the user's role
+6. Be comprehensive but organized - use the structure to make information digestible
+
+Remember: This is a conversation, so acknowledge context from previous messages and build upon the discussion naturally while maintaining the required structure.""")
+
+        return "\n".join(prompt_parts)
     
+    def _get_conversation_context(self, session_id: str, user_id: int, limit: int = 5) -> str:
+        """Retrieve recent conversation history for context"""
+        try:
+            from ..database.connection import db_manager
+            from ..auth.models import ChatHistory
+
+            with db_manager.get_session() as db:
+                # Get recent messages from this session
+                recent_messages = db.query(ChatHistory).filter(
+                    ChatHistory.session_id == session_id,
+                    ChatHistory.user_id == user_id
+                ).order_by(ChatHistory.timestamp.desc()).limit(limit * 2).all()
+
+                if not recent_messages:
+                    return ""
+
+                # Format conversation context
+                context_parts = []
+                for msg in reversed(recent_messages):  # Reverse to get chronological order
+                    role = "User" if msg.message_type == "user" else "Assistant"
+                    content = msg.content[:200] + "..." if len(msg.content) > 200 else msg.content
+                    context_parts.append(f"{role}: {content}")
+
+                return "\n".join(context_parts[-limit:])  # Keep only last 'limit' exchanges
+
+        except Exception as e:
+            logger.warning(f"Failed to retrieve conversation context: {str(e)}")
+            return ""
+
     async def process_query(
         self,
         query: str,
@@ -1043,7 +1130,13 @@ Remember: Use ALL available context to provide the most comprehensive, detailed 
         start_time = datetime.now()
         
         try:
-            # Initialize state
+            # Get conversation context for memory
+            conversation_context = self._get_conversation_context(session_id, user.id)
+
+            # Classify query with context
+            query_type = self.classifier.classify_query(query, UserRole(user.role))
+
+            # Initialize state with conversation context
             initial_state = AgentState(
                 messages=[HumanMessage(content=query)],
                 user={
@@ -1053,12 +1146,18 @@ Remember: Use ALL available context to provide the most comprehensive, detailed 
                     "department": user.department
                 },
                 query=query,
-                query_type=QueryType.GENERAL,
-                context={"session_id": session_id},
+                query_type=query_type,
+                context={
+                    "session_id": session_id,
+                    "conversation_history": conversation_context
+                },
                 structured_results=None,
                 document_results=None,
                 final_response=None,
-                metadata={"start_time": start_time.isoformat()},
+                metadata={
+                    "start_time": start_time.isoformat(),
+                    "has_conversation_context": bool(conversation_context)
+                },
                 error=None,
                 visualization=None
             )
@@ -1083,29 +1182,172 @@ Remember: Use ALL available context to provide the most comprehensive, detailed 
             # Calculate confidence score
             confidence_score = self._calculate_confidence_score(final_state)
             
+            # Parse structured response if available
+            response_content = final_state.get("final_response", "I couldn't process your request.")
+            parsed_response = self._parse_structured_response(response_content, query)
+
             return ChatbotResponse(
-                content=final_state.get("final_response", "I couldn't process your request."),
+                content=response_content,
+                short_answer=parsed_response["short_answer"],
+                detailed_response=parsed_response["detailed_response"],
+                summary=parsed_response["summary"],
                 sources=sources,
                 confidence_score=confidence_score,
                 processing_time=processing_time,
                 query_type=final_state.get("query_type", QueryType.GENERAL),
                 metadata=final_state.get("metadata", {}),
-                visualization=final_state.get("visualization")
+                visualization=final_state.get("visualization"),
+                conversation_context=conversation_context
             )
             
         except Exception as e:
             processing_time = (datetime.now() - start_time).total_seconds()
             logger.error(f"Query processing failed: {str(e)}")
             
+            error_content = f"I apologize, but I encountered an error: {str(e)}"
             return ChatbotResponse(
-                content=f"I apologize, but I encountered an error: {str(e)}",
+                content=error_content,
+                short_answer="Error occurred while processing your request.",
+                detailed_response=error_content,
+                summary="Please try rephrasing your question or contact support if the issue persists.",
                 sources=[],
                 confidence_score=0.0,
                 processing_time=processing_time,
                 query_type=QueryType.GENERAL,
-                metadata={"error": str(e)}
+                metadata={"error": str(e)},
+                conversation_context=""
             )
     
+    def _parse_structured_response(self, response_content: str, query: str) -> Dict[str, str]:
+        """Parse response into structured format: short answer, detailed response, and summary"""
+        try:
+            # Check if response already has structured format
+            if "## Short Answer" in response_content or "## Quick Answer" in response_content:
+                return self._extract_existing_structure(response_content)
+
+            # Generate structured response
+            lines = response_content.split('\n')
+            paragraphs = [line.strip() for line in lines if line.strip()]
+
+            if not paragraphs:
+                return {
+                    "short_answer": "I couldn't generate a response to your question.",
+                    "detailed_response": response_content,
+                    "summary": "Please try rephrasing your question."
+                }
+
+            # Extract short answer (first meaningful sentence or paragraph)
+            short_answer = self._extract_short_answer(paragraphs, query)
+
+            # Detailed response is the full content
+            detailed_response = response_content
+
+            # Generate summary (key points)
+            summary = self._extract_summary(paragraphs)
+
+            return {
+                "short_answer": short_answer,
+                "detailed_response": detailed_response,
+                "summary": summary
+            }
+
+        except Exception as e:
+            logger.warning(f"Failed to parse structured response: {str(e)}")
+            return {
+                "short_answer": response_content[:200] + "..." if len(response_content) > 200 else response_content,
+                "detailed_response": response_content,
+                "summary": "Full response provided above."
+            }
+
+    def _extract_existing_structure(self, content: str) -> Dict[str, str]:
+        """Extract structured content if it already exists"""
+        sections = {"short_answer": "", "detailed_response": "", "summary": ""}
+
+        # Split by sections
+        if "## Short Answer" in content:
+            parts = content.split("## Short Answer")
+            if len(parts) > 1:
+                short_section = parts[1].split("##")[0].strip()
+                sections["short_answer"] = short_section
+
+        if "## Detailed Analysis" in content or "## Details" in content:
+            marker = "## Detailed Analysis" if "## Detailed Analysis" in content else "## Details"
+            parts = content.split(marker)
+            if len(parts) > 1:
+                detailed_section = parts[1].split("##")[0].strip()
+                sections["detailed_response"] = detailed_section
+
+        if "## Summary" in content or "## Key Takeaways" in content:
+            marker = "## Summary" if "## Summary" in content else "## Key Takeaways"
+            parts = content.split(marker)
+            if len(parts) > 1:
+                summary_section = parts[1].split("##")[0].strip()
+                sections["summary"] = summary_section
+
+        # Fallback to full content if sections are empty
+        if not sections["short_answer"]:
+            sections["short_answer"] = content[:200] + "..." if len(content) > 200 else content
+        if not sections["detailed_response"]:
+            sections["detailed_response"] = content
+        if not sections["summary"]:
+            sections["summary"] = "Full response provided above."
+
+        return sections
+
+    def _extract_short_answer(self, paragraphs: List[str], query: str) -> str:
+        """Extract a concise short answer"""
+        query_lower = query.lower()
+
+        # Look for direct answers to common question types
+        for para in paragraphs[:3]:  # Check first 3 paragraphs
+            para_lower = para.lower()
+
+            # For "what is" questions
+            if any(q in query_lower for q in ["what is", "what are", "define"]):
+                if len(para) < 300 and any(word in para_lower for word in ["is", "are", "refers to", "means"]):
+                    return para
+
+            # For "how many" or numerical questions
+            if any(q in query_lower for q in ["how many", "how much", "total", "count"]):
+                if any(char.isdigit() for char in para):
+                    return para
+
+            # For "yes/no" questions
+            if any(q in query_lower for q in ["is there", "does", "can", "will", "should"]):
+                if any(word in para_lower for word in ["yes", "no", "true", "false", "available", "possible"]):
+                    return para
+
+        # Default: use first paragraph or sentence
+        first_para = paragraphs[0] if paragraphs else ""
+        if len(first_para) > 200:
+            # Try to get first sentence
+            sentences = first_para.split('. ')
+            return sentences[0] + "." if sentences else first_para[:200] + "..."
+
+        return first_para
+
+    def _extract_summary(self, paragraphs: List[str]) -> str:
+        """Extract key takeaways as summary"""
+        # Look for bullet points or numbered lists
+        key_points = []
+
+        for para in paragraphs:
+            # Check for bullet points or numbered items
+            if any(para.strip().startswith(marker) for marker in ["•", "-", "*", "1.", "2.", "3."]):
+                key_points.append(para.strip())
+            # Check for sentences with key indicators
+            elif any(indicator in para.lower() for indicator in ["key", "important", "main", "primary", "significant"]):
+                key_points.append(para.strip())
+
+        if key_points:
+            return "\n".join(key_points[:3])  # Top 3 key points
+
+        # Fallback: use last paragraph or create generic summary
+        if len(paragraphs) > 1:
+            return paragraphs[-1]
+
+        return "Key information provided in the detailed response above."
+
     def _calculate_confidence_score(self, state: AgentState) -> float:
         """Calculate confidence score based on results quality"""
         # If there's an error and no fallback was used, return 0.0

@@ -900,11 +900,21 @@ For immediate evaluation by executives and stakeholders:
 # One-command demo deployment
 git clone https://github.com/erickyegon/finsolve-rag-rbac-assistant.git
 cd finsolve-rag-rbac-assistant
-make demo-deploy
+
+# Create virtual environment and install dependencies
+python -m venv fin_env
+fin_env\Scripts\activate  # Windows
+# source fin_env/bin/activate  # Linux/Mac
+pip install -r requirements.txt
+
+# Run the application (ONLY supported method)
+python main.py
 
 # Access demo at: http://localhost:8501
-# Executive credentials: ceo.finsolve / CEO123!
+# Executive credentials: admin / Admin123!
 ```
+
+> **🎯 Executive Note**: The application automatically starts both the API server (port 8000) and Streamlit interface (port 8501). Use `python main.py` exclusively to ensure proper initialization.
 
 ### **🏢 Enterprise Deployment Strategies**
 
@@ -1040,6 +1050,17 @@ pip install -r requirements.txt
 
 # Set environment variables
 cp .env.example .env
+
+# IMPORTANT: Run the application using the ONLY supported method:
+python main.py
+
+# Alternative for Windows users:
+start.bat
+```
+
+> **⚠️ CRITICAL**: Always use `python main.py` to run the application.
+> Do NOT use: `python -m src.api.main` or `python src/api/main.py`
+> The main.py file handles proper path setup and prevents import errors.
 # Edit .env with your configuration
 
 # Run the application

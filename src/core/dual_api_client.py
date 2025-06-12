@@ -78,25 +78,27 @@ class DualAPIClient:
         self.openai_client = None
         if OPENAI_AVAILABLE and self.openai_api_key:
             try:
-                # Try with minimal parameters to avoid version compatibility issues
-                self.openai_client = openai.OpenAI(
-                    api_key=self.openai_api_key,
-                    timeout=settings.openai_timeout
-                )
+                # Try with basic initialization first to avoid compatibility issues
+                self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
                 logger.info("OpenAI client initialized successfully")
             except TypeError as e:
                 # Handle version compatibility issues
-                if "proxies" in str(e) or "unexpected keyword argument" in str(e):
+                error_msg = str(e).lower()
+                if any(keyword in error_msg for keyword in ["proxies", "unexpected keyword argument", "timeout"]):
                     try:
-                        # Fallback to basic initialization
-                        self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
-                        logger.info("OpenAI client initialized with fallback method")
+                        # Try even more minimal initialization
+                        import openai as openai_module
+                        self.openai_client = openai_module.OpenAI(api_key=self.openai_api_key)
+                        logger.info("OpenAI client initialized with minimal parameters")
                     except Exception as fallback_e:
-                        logger.warning(f"Failed to initialize OpenAI client (fallback): {str(fallback_e)}")
+                        logger.warning(f"Failed to initialize OpenAI client with minimal params: {str(fallback_e)}")
+                        self.openai_client = None
                 else:
                     logger.warning(f"Failed to initialize OpenAI client: {str(e)}")
+                    self.openai_client = None
             except Exception as e:
                 logger.warning(f"Failed to initialize OpenAI client: {str(e)}")
+                self.openai_client = None
         
         logger.info(f"Dual API client initialized - Euri: {bool(self.euriai_llm)}, OpenAI: {bool(self.openai_client)}")
     
@@ -295,7 +297,7 @@ class DualAPIClient:
                     response_time=response_time,
                     model=settings.openai_model,
                     metadata={
-                        "usage": response.usage.dict() if response.usage else None,
+                        "usage": response.usage.model_dump() if response.usage else None,
                         "finish_reason": response.choices[0].finish_reason
                     }
                 )

@@ -68,16 +68,20 @@ async def send_message(
             session_id=session_id
         )
         
-        # Create response object
+        # Create enhanced response object
         chat_response = ChatResponse(
             content=response.content,
+            short_answer=response.short_answer,
+            detailed_response=response.detailed_response,
+            summary=response.summary,
             message_type="assistant",
             session_id=session_id,
             retrieved_documents=response.sources,
             confidence_score=response.confidence_score,
             processing_time=response.processing_time,
             timestamp=datetime.now(),
-            visualization=response.visualization
+            visualization=response.visualization,
+            conversation_context=response.conversation_context
         )
         
         # Log assistant response

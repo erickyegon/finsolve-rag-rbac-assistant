@@ -1131,15 +1131,19 @@ class FinSolveAIAssistant:
                     confidence = data.get("confidence_score", 0.0)
                     content = data["content"]
                     
-                    # Add assistant response
+                    # Add assistant response with structured content
                     st.session_state.chat_history.append({
                         "content": content,
+                        "short_answer": data.get("short_answer"),
+                        "detailed_response": data.get("detailed_response"),
+                        "summary": data.get("summary"),
                         "message_type": "assistant",
                         "timestamp": data.get("timestamp", datetime.now().isoformat()),
                         "retrieved_documents": data.get("retrieved_documents", []),
                         "confidence_score": confidence,
                         "processing_time": data.get("processing_time"),
-                        "visualization": data.get("visualization")
+                        "visualization": data.get("visualization"),
+                        "conversation_context": data.get("conversation_context")
                     })
                     
                     # Update stats
@@ -1166,11 +1170,11 @@ class FinSolveAIAssistant:
             st.session_state.loading = False
     
     def display_chat_message(self, message: Dict[str, Any]):
-        """Display enhanced chat message with improved styling."""
+        """Display enhanced chat message with structured response format."""
         is_user = message["message_type"] == "user"
         timestamp = self.message_renderer.format_timestamp(message.get("timestamp", ""))
         clean_content = self.message_renderer.clean_content(message["content"])
-        
+
         if is_user:
             st.markdown(f"""
             <div class="chat-message">
@@ -1187,10 +1191,16 @@ class FinSolveAIAssistant:
             confidence = message.get("confidence_score", 0.0)
             processing_time = message.get("processing_time")
             sources = message.get("retrieved_documents", [])
-            
+
+            # Get structured response parts
+            short_answer = message.get("short_answer", "")
+            detailed_response = message.get("detailed_response", "")
+            summary = message.get("summary", "")
+
             confidence_class = self.message_renderer.get_confidence_class(confidence)
             confidence_emoji = "🟢" if confidence > 0.8 else "🟡" if confidence > 0.6 else "🔴"
-            
+
+            # Display structured response
             st.markdown(f"""
             <div class="chat-message">
                 <div class="assistant-message">
@@ -1203,29 +1213,83 @@ class FinSolveAIAssistant:
                         </div>
                         <span style="color: var(--finsolve-dark-grey);">{timestamp}</span>
                     </div>
-                    <div class="message-content">{clean_content}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            
+
+            # Display structured content in expandable sections
+            if short_answer:
+                st.markdown("### 🎯 Quick Answer")
+                st.markdown(f"<div style='background: rgba(0, 245, 212, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #00F5D4; margin-bottom: 1rem;'>{self.message_renderer.clean_content(short_answer)}</div>", unsafe_allow_html=True)
+
+            if detailed_response and detailed_response != clean_content:
+                with st.expander("📊 Detailed Analysis", expanded=True):
+                    st.markdown(self.message_renderer.clean_content(detailed_response))
+            elif clean_content:
+                with st.expander("📊 Detailed Analysis", expanded=True):
+                    st.markdown(clean_content)
+
+            if summary:
+                st.markdown("### 📝 Key Takeaways")
+                st.markdown(f"<div style='background: rgba(13, 27, 42, 0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #0D1B2A; margin-bottom: 1rem;'>{self.message_renderer.clean_content(summary)}</div>", unsafe_allow_html=True)
+
             # Display visualization if available
             visualization = message.get("visualization")
             if visualization:
+                st.markdown("### 📊 Data Visualization")
                 self.display_visualization(visualization)
-            
+
             # Display metadata
+            sources = message.get("retrieved_documents", [])
+            processing_time = message.get("processing_time")
+
             if sources or processing_time:
                 col1, col2 = st.columns([4, 1])
-                
+
                 with col1:
                     if sources:
                         with st.expander(f"📚 Sources ({len(sources)})", expanded=False):
                             for i, source in enumerate(sources, 1):
                                 st.markdown(f"**{i}.** `{source}`")
-                
+
                 with col2:
                     if processing_time:
                         st.caption(f"⚡ {processing_time:.1f}s")
+
+    def display_visualization(self, visualization: Dict[str, Any]):
+        """Display visualization based on the provided data"""
+        try:
+            viz_type = visualization.get("type", "").lower()
+            data = visualization.get("data", {})
+
+            if viz_type == "bar_chart" and "labels" in data and "values" in data:
+                import pandas as pd
+                df = pd.DataFrame({
+                    "Category": data["labels"],
+                    "Value": data["values"]
+                })
+                st.bar_chart(df.set_index("Category"))
+
+            elif viz_type == "line_chart" and "x" in data and "y" in data:
+                import pandas as pd
+                df = pd.DataFrame({
+                    "x": data["x"],
+                    "y": data["y"]
+                })
+                st.line_chart(df.set_index("x"))
+
+            elif viz_type == "table" and "headers" in data and "rows" in data:
+                import pandas as pd
+                df = pd.DataFrame(data["rows"], columns=data["headers"])
+                st.dataframe(df, use_container_width=True)
+
+            else:
+                # Fallback: display as formatted text
+                st.json(visualization)
+
+        except Exception as e:
+            st.error(f"Error displaying visualization: {str(e)}")
+            st.json(visualization)
     
     def display_dashboard(self, dashboard_type: str, user_role: str):
         """Display interactive dashboard based on type and user role"""

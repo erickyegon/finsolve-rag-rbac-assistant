@@ -1,3 +1,11 @@
+# FinSolve RBAC Assistant Requirements
+#
+# IMPORTANT: Always run the application using:
+# python main.py
+#
+# This is the ONLY supported way to run the application.
+# Do NOT use: python -m src.api.main or python src/api/main.py
+#
 # Core Framework
 fastapi>=0.104.1
 uvicorn>=0.24.0
@@ -10,7 +18,7 @@ plotly==5.17.0
 langchain>=0.1.0
 langchain-community>=0.0.13
 langchain-core>=0.1.10
-langgraph>=0.0.20
+langgraph>=0.4.0
 langserve>=0.0.30
 
 # Model Context Protocol (MCP)
@@ -49,7 +57,7 @@ aiohttp==3.8.5
 # Utilities & Validation
 pydantic>=2.7.2
 pydantic-settings>=2.5.2
-typing-extensions==4.8.0
+typing-extensions>=4.14.0
 rich>=13.9.4
 loguru==0.7.2
 python-dateutil==2.8.2
@@ -64,3 +72,5 @@ pytest-asyncio==0.21.1
 
 euriai
 fastmcp>=1.0.0
+PyPDF2
+python-docx

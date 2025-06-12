@@ -97,7 +97,7 @@ class Settings(BaseSettings):
     # Server Configuration
     langserve_host: str = Field(default="0.0.0.0", env="LANGSERVE_HOST")
     langserve_port: int = Field(default=8000, env="LANGSERVE_PORT")
-    streamlit_host: str = Field(default="0.0.0.0", env="STREAMLIT_HOST")
+    streamlit_host: str = Field(default="localhost", env="STREAMLIT_HOST")
     streamlit_port: int = Field(default=8501, env="STREAMLIT_PORT")
 
     # Public URLs (for display purposes)
