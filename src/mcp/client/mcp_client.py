@@ -85,15 +85,28 @@ class MCPClient:
             # Extract the actual tool name (remove server prefix)
             actual_tool_name = tool_name.replace(f"{server_name}_", "")
             
-            # Call the tool on the appropriate server
-            if server_name == "hr":
-                result = await self._call_hr_tool(actual_tool_name, arguments)
-            elif server_name == "finance":
-                result = await self._call_finance_tool(actual_tool_name, arguments)
-            elif server_name == "document":
-                result = await self._call_document_tool(actual_tool_name, arguments)
-            else:
-                result = {"error": f"Unknown server: {server_name}"}
+            # Call the tool on the appropriate server with timeout
+            try:
+                if server_name == "hr":
+                    result = await asyncio.wait_for(
+                        self._call_hr_tool(actual_tool_name, arguments),
+                        timeout=30.0
+                    )
+                elif server_name == "finance":
+                    result = await asyncio.wait_for(
+                        self._call_finance_tool(actual_tool_name, arguments),
+                        timeout=30.0
+                    )
+                elif server_name == "document":
+                    result = await asyncio.wait_for(
+                        self._call_document_tool(actual_tool_name, arguments),
+                        timeout=30.0
+                    )
+                else:
+                    result = {"error": f"Unknown server: {server_name}"}
+            except asyncio.TimeoutError:
+                logger.error(f"Tool call timeout for {tool_name}")
+                result = {"error": f"Tool call timeout for {tool_name}"}
             
             return {
                 "tool_name": tool_name,

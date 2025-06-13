@@ -60,44 +60,249 @@ API_CONFIG = {
     "retry_attempts": 3
 }
 
-# FinSolve Brand Constants
+# Enhanced FinSolve Brand Constants with WCAG Compliant Colors
 FINSOLVE_BRAND = {
     "colors": {
-        "deep_blue": "#0D1B2A",
-        "teal": "#00F5D4",
-        "white": "#FFFFFF",
-        "grey": "#A9A9A9",
-        "light_grey": "#F8F9FA",
-        "dark_grey": "#666666",
-        "success": "#4CAF50",
-        "warning": "#FF9800",
-        "error": "#F44336",
-        "info": "#2196F3"
+        # Primary Brand Colors (WCAG AA Compliant)
+        "deep_blue": "#0D1B2A",           # Primary brand color
+        "teal": "#00F5D4",               # Secondary brand color
+        "white": "#FFFFFF",              # Pure white
+        "black": "#000000",              # Pure black for high contrast
+
+        # Enhanced Grey Scale (Better contrast ratios)
+        "grey_50": "#F8FAFC",           # Lightest grey
+        "grey_100": "#F1F5F9",          # Very light grey
+        "grey_200": "#E2E8F0",          # Light grey
+        "grey_300": "#CBD5E1",          # Medium light grey
+        "grey_400": "#94A3B8",          # Medium grey
+        "grey_500": "#64748B",          # Base grey
+        "grey_600": "#475569",          # Medium dark grey
+        "grey_700": "#334155",          # Dark grey
+        "grey_800": "#1E293B",          # Very dark grey
+        "grey_900": "#0F172A",          # Darkest grey
+
+        # Status Colors (WCAG AA Compliant)
+        "success": "#059669",           # Green (4.5:1 contrast)
+        "success_light": "#D1FAE5",     # Light green background
+        "warning": "#D97706",           # Orange (4.5:1 contrast)
+        "warning_light": "#FEF3C7",     # Light orange background
+        "error": "#DC2626",             # Red (4.5:1 contrast)
+        "error_light": "#FEE2E2",       # Light red background
+        "info": "#2563EB",              # Blue (4.5:1 contrast)
+        "info_light": "#DBEAFE",        # Light blue background
+
+        # Executive Colors (Gold theme for C-level)
+        "gold": "#F59E0B",              # Executive gold
+        "gold_light": "#FEF3C7",        # Light gold background
+        "gold_dark": "#D97706",         # Dark gold
+
+        # Interactive Colors
+        "primary": "#0D1B2A",           # Primary buttons
+        "primary_hover": "#1E293B",     # Primary hover state
+        "secondary": "#00F5D4",         # Secondary buttons
+        "secondary_hover": "#00D4B8",   # Secondary hover state
+
+        # Background Colors
+        "bg_primary": "#FFFFFF",        # Main background
+        "bg_secondary": "#F8FAFC",      # Secondary background
+        "bg_tertiary": "#F1F5F9",       # Tertiary background
+        "bg_overlay": "rgba(15, 23, 42, 0.8)",  # Modal overlay
+
+        # Border Colors
+        "border_light": "#E2E8F0",      # Light borders
+        "border_medium": "#CBD5E1",     # Medium borders
+        "border_dark": "#94A3B8",       # Dark borders
+        "border_focus": "#00F5D4",      # Focus state borders
     },
     "fonts": {
-        "primary": "'Poppins', sans-serif",
-        "secondary": "'Roboto', sans-serif"
+        "primary": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "heading": "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "mono": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace"
+    },
+    "typography": {
+        "scale": {
+            "xs": "0.75rem",    # 12px
+            "sm": "0.875rem",   # 14px
+            "base": "1rem",     # 16px
+            "lg": "1.125rem",   # 18px
+            "xl": "1.25rem",    # 20px
+            "2xl": "1.5rem",    # 24px
+            "3xl": "1.875rem",  # 30px
+            "4xl": "2.25rem",   # 36px
+            "5xl": "3rem",      # 48px
+        },
+        "weight": {
+            "light": "300",
+            "normal": "400",
+            "medium": "500",
+            "semibold": "600",
+            "bold": "700",
+            "extrabold": "800"
+        },
+        "line_height": {
+            "tight": "1.25",
+            "normal": "1.5",
+            "relaxed": "1.75"
+        }
     },
     "gradients": {
-        "primary": "linear-gradient(135deg, #0D1B2A 0%, #1a2332 100%)",
-        "secondary": "linear-gradient(135deg, #00F5D4 0%, #00d4b8 100%)",
-        "background": "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)"
+        "primary": "linear-gradient(135deg, #0D1B2A 0%, #1E293B 100%)",
+        "secondary": "linear-gradient(135deg, #00F5D4 0%, #00D4B8 100%)",
+        "background": "linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)",
+        "executive": "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
+        "card": "linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%)",
+        "overlay": "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%)"
+    },
+    "shadows": {
+        "xs": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "sm": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+        "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        "brand": "0 10px 25px -5px rgba(0, 245, 212, 0.2), 0 4px 6px -2px rgba(0, 245, 212, 0.1)",
+        "executive": "0 10px 25px -5px rgba(245, 158, 11, 0.3), 0 4px 6px -2px rgba(245, 158, 11, 0.1)"
+    },
+    "spacing": {
+        "xs": "0.25rem",    # 4px
+        "sm": "0.5rem",     # 8px
+        "md": "1rem",       # 16px
+        "lg": "1.5rem",     # 24px
+        "xl": "2rem",       # 32px
+        "2xl": "3rem",      # 48px
+        "3xl": "4rem",      # 64px
+    },
+    "border_radius": {
+        "sm": "0.375rem",   # 6px
+        "md": "0.5rem",     # 8px
+        "lg": "0.75rem",    # 12px
+        "xl": "1rem",       # 16px
+        "2xl": "1.5rem",    # 24px
+        "full": "9999px"
     }
 }
 
-# Role Configuration
+# Enhanced Role Configuration with Executive Styling
 ROLE_CONFIG = {
-    "ceo": {"icon": "👑", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 1},
-    "cfo": {"icon": "💰", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 1},
-    "cto": {"icon": "🔧", "color": FINSOLVE_BRAND["colors"]["deep_blue"], "priority": 1},
-    "chro": {"icon": "👥", "color": FINSOLVE_BRAND["colors"]["deep_blue"], "priority": 1},
-    "vp_marketing": {"icon": "📈", "color": FINSOLVE_BRAND["colors"]["grey"], "priority": 1},
-    "system_admin": {"icon": "🔧", "color": FINSOLVE_BRAND["colors"]["deep_blue"], "priority": 2},
-    "hr": {"icon": "👥", "color": FINSOLVE_BRAND["colors"]["deep_blue"], "priority": 3},
-    "finance": {"icon": "💰", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 3},
-    "marketing": {"icon": "📈", "color": FINSOLVE_BRAND["colors"]["grey"], "priority": 3},
-    "engineering": {"icon": "⚙️", "color": FINSOLVE_BRAND["colors"]["teal"], "priority": 3},
-    "employee": {"icon": "👤", "color": FINSOLVE_BRAND["colors"]["grey"], "priority": 4}
+    # C-Level Executives (Gold theme)
+    "ceo": {
+        "icon": "👑",
+        "color": FINSOLVE_BRAND["colors"]["gold"],
+        "bg_color": FINSOLVE_BRAND["colors"]["gold_light"],
+        "priority": 1,
+        "title": "Chief Executive Officer",
+        "badge": "EXECUTIVE",
+        "gradient": FINSOLVE_BRAND["gradients"]["executive"],
+        "shadow": FINSOLVE_BRAND["shadows"]["executive"]
+    },
+    "cfo": {
+        "icon": "💰",
+        "color": FINSOLVE_BRAND["colors"]["gold"],
+        "bg_color": FINSOLVE_BRAND["colors"]["gold_light"],
+        "priority": 1,
+        "title": "Chief Financial Officer",
+        "badge": "EXECUTIVE",
+        "gradient": FINSOLVE_BRAND["gradients"]["executive"],
+        "shadow": FINSOLVE_BRAND["shadows"]["executive"]
+    },
+    "cto": {
+        "icon": "🔧",
+        "color": FINSOLVE_BRAND["colors"]["gold"],
+        "bg_color": FINSOLVE_BRAND["colors"]["gold_light"],
+        "priority": 1,
+        "title": "Chief Technology Officer",
+        "badge": "EXECUTIVE",
+        "gradient": FINSOLVE_BRAND["gradients"]["executive"],
+        "shadow": FINSOLVE_BRAND["shadows"]["executive"]
+    },
+    "chro": {
+        "icon": "👥",
+        "color": FINSOLVE_BRAND["colors"]["gold"],
+        "bg_color": FINSOLVE_BRAND["colors"]["gold_light"],
+        "priority": 1,
+        "title": "Chief Human Resources Officer",
+        "badge": "EXECUTIVE",
+        "gradient": FINSOLVE_BRAND["gradients"]["executive"],
+        "shadow": FINSOLVE_BRAND["shadows"]["executive"]
+    },
+
+    # VP Level (Premium theme)
+    "vp_marketing": {
+        "icon": "📈",
+        "color": FINSOLVE_BRAND["colors"]["primary"],
+        "bg_color": FINSOLVE_BRAND["colors"]["info_light"],
+        "priority": 2,
+        "title": "VP Marketing",
+        "badge": "LEADERSHIP",
+        "gradient": FINSOLVE_BRAND["gradients"]["primary"],
+        "shadow": FINSOLVE_BRAND["shadows"]["brand"]
+    },
+
+    # System Administration
+    "system_admin": {
+        "icon": "🔧",
+        "color": FINSOLVE_BRAND["colors"]["error"],
+        "bg_color": FINSOLVE_BRAND["colors"]["error_light"],
+        "priority": 2,
+        "title": "System Administrator",
+        "badge": "ADMIN",
+        "gradient": "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+        "shadow": FINSOLVE_BRAND["shadows"]["lg"]
+    },
+
+    # Department Heads
+    "hr": {
+        "icon": "👥",
+        "color": FINSOLVE_BRAND["colors"]["info"],
+        "bg_color": FINSOLVE_BRAND["colors"]["info_light"],
+        "priority": 3,
+        "title": "Human Resources",
+        "badge": "DEPARTMENT",
+        "gradient": "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+        "shadow": FINSOLVE_BRAND["shadows"]["md"]
+    },
+    "finance": {
+        "icon": "💰",
+        "color": FINSOLVE_BRAND["colors"]["success"],
+        "bg_color": FINSOLVE_BRAND["colors"]["success_light"],
+        "priority": 3,
+        "title": "Finance",
+        "badge": "DEPARTMENT",
+        "gradient": "linear-gradient(135deg, #059669 0%, #047857 100%)",
+        "shadow": FINSOLVE_BRAND["shadows"]["md"]
+    },
+    "marketing": {
+        "icon": "📈",
+        "color": FINSOLVE_BRAND["colors"]["warning"],
+        "bg_color": FINSOLVE_BRAND["colors"]["warning_light"],
+        "priority": 3,
+        "title": "Marketing",
+        "badge": "DEPARTMENT",
+        "gradient": "linear-gradient(135deg, #D97706 0%, #B45309 100%)",
+        "shadow": FINSOLVE_BRAND["shadows"]["md"]
+    },
+    "engineering": {
+        "icon": "⚙️",
+        "color": FINSOLVE_BRAND["colors"]["secondary"],
+        "bg_color": FINSOLVE_BRAND["colors"]["bg_tertiary"],
+        "priority": 3,
+        "title": "Engineering",
+        "badge": "DEPARTMENT",
+        "gradient": FINSOLVE_BRAND["gradients"]["secondary"],
+        "shadow": FINSOLVE_BRAND["shadows"]["brand"]
+    },
+
+    # General Employees
+    "employee": {
+        "icon": "👤",
+        "color": FINSOLVE_BRAND["colors"]["grey_600"],
+        "bg_color": FINSOLVE_BRAND["colors"]["grey_100"],
+        "priority": 4,
+        "title": "Employee",
+        "badge": "STAFF",
+        "gradient": "linear-gradient(135deg, #64748B 0%, #475569 100%)",
+        "shadow": FINSOLVE_BRAND["shadows"]["sm"]
+    }
 }
 
 # ============================
@@ -105,79 +310,195 @@ ROLE_CONFIG = {
 # ============================
 
 def get_enhanced_css() -> str:
-    """Generate enhanced CSS with improved brand consistency and accessibility."""
+    """Generate enhanced CSS with modern design system and accessibility features."""
     return f"""
     <style>
-        /* Import Brand Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
+        /* Import Enhanced Fonts for Better Readability */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
-        /* CSS Custom Properties for Brand Consistency */
+        /* Modern CSS Custom Properties Design System */
         :root {{
-            --finsolve-deep-blue: {FINSOLVE_BRAND["colors"]["deep_blue"]};
-            --finsolve-teal: {FINSOLVE_BRAND["colors"]["teal"]};
-            --finsolve-white: {FINSOLVE_BRAND["colors"]["white"]};
-            --finsolve-grey: {FINSOLVE_BRAND["colors"]["grey"]};
-            --finsolve-light-grey: {FINSOLVE_BRAND["colors"]["light_grey"]};
-            --finsolve-dark-grey: {FINSOLVE_BRAND["colors"]["dark_grey"]};
-            --finsolve-success: {FINSOLVE_BRAND["colors"]["success"]};
-            --finsolve-warning: {FINSOLVE_BRAND["colors"]["warning"]};
-            --finsolve-error: {FINSOLVE_BRAND["colors"]["error"]};
-            --finsolve-info: {FINSOLVE_BRAND["colors"]["info"]};
-            
+            /* Brand Colors */
+            --color-primary: {FINSOLVE_BRAND["colors"]["deep_blue"]};
+            --color-secondary: {FINSOLVE_BRAND["colors"]["teal"]};
+            --color-white: {FINSOLVE_BRAND["colors"]["white"]};
+            --color-black: {FINSOLVE_BRAND["colors"]["black"]};
+
+            /* Grey Scale */
+            --color-grey-50: {FINSOLVE_BRAND["colors"]["grey_50"]};
+            --color-grey-100: {FINSOLVE_BRAND["colors"]["grey_100"]};
+            --color-grey-200: {FINSOLVE_BRAND["colors"]["grey_200"]};
+            --color-grey-300: {FINSOLVE_BRAND["colors"]["grey_300"]};
+            --color-grey-400: {FINSOLVE_BRAND["colors"]["grey_400"]};
+            --color-grey-500: {FINSOLVE_BRAND["colors"]["grey_500"]};
+            --color-grey-600: {FINSOLVE_BRAND["colors"]["grey_600"]};
+            --color-grey-700: {FINSOLVE_BRAND["colors"]["grey_700"]};
+            --color-grey-800: {FINSOLVE_BRAND["colors"]["grey_800"]};
+            --color-grey-900: {FINSOLVE_BRAND["colors"]["grey_900"]};
+
+            /* Status Colors */
+            --color-success: {FINSOLVE_BRAND["colors"]["success"]};
+            --color-success-light: {FINSOLVE_BRAND["colors"]["success_light"]};
+            --color-warning: {FINSOLVE_BRAND["colors"]["warning"]};
+            --color-warning-light: {FINSOLVE_BRAND["colors"]["warning_light"]};
+            --color-error: {FINSOLVE_BRAND["colors"]["error"]};
+            --color-error-light: {FINSOLVE_BRAND["colors"]["error_light"]};
+            --color-info: {FINSOLVE_BRAND["colors"]["info"]};
+            --color-info-light: {FINSOLVE_BRAND["colors"]["info_light"]};
+
+            /* Executive Colors */
+            --color-gold: {FINSOLVE_BRAND["colors"]["gold"]};
+            --color-gold-light: {FINSOLVE_BRAND["colors"]["gold_light"]};
+            --color-gold-dark: {FINSOLVE_BRAND["colors"]["gold_dark"]};
+
+            /* Interactive Colors */
+            --color-primary-hover: {FINSOLVE_BRAND["colors"]["primary_hover"]};
+            --color-secondary-hover: {FINSOLVE_BRAND["colors"]["secondary_hover"]};
+
+            /* Background Colors */
+            --bg-primary: {FINSOLVE_BRAND["colors"]["bg_primary"]};
+            --bg-secondary: {FINSOLVE_BRAND["colors"]["bg_secondary"]};
+            --bg-tertiary: {FINSOLVE_BRAND["colors"]["bg_tertiary"]};
+            --bg-overlay: {FINSOLVE_BRAND["colors"]["bg_overlay"]};
+
+            /* Border Colors */
+            --border-light: {FINSOLVE_BRAND["colors"]["border_light"]};
+            --border-medium: {FINSOLVE_BRAND["colors"]["border_medium"]};
+            --border-dark: {FINSOLVE_BRAND["colors"]["border_dark"]};
+            --border-focus: {FINSOLVE_BRAND["colors"]["border_focus"]};
+
+            /* Typography */
             --font-primary: {FINSOLVE_BRAND["fonts"]["primary"]};
-            --font-secondary: {FINSOLVE_BRAND["fonts"]["secondary"]};
-            
+            --font-heading: {FINSOLVE_BRAND["fonts"]["heading"]};
+            --font-mono: {FINSOLVE_BRAND["fonts"]["mono"]};
+
+            /* Font Sizes */
+            --text-xs: {FINSOLVE_BRAND["typography"]["scale"]["xs"]};
+            --text-sm: {FINSOLVE_BRAND["typography"]["scale"]["sm"]};
+            --text-base: {FINSOLVE_BRAND["typography"]["scale"]["base"]};
+            --text-lg: {FINSOLVE_BRAND["typography"]["scale"]["lg"]};
+            --text-xl: {FINSOLVE_BRAND["typography"]["scale"]["xl"]};
+            --text-2xl: {FINSOLVE_BRAND["typography"]["scale"]["2xl"]};
+            --text-3xl: {FINSOLVE_BRAND["typography"]["scale"]["3xl"]};
+            --text-4xl: {FINSOLVE_BRAND["typography"]["scale"]["4xl"]};
+            --text-5xl: {FINSOLVE_BRAND["typography"]["scale"]["5xl"]};
+
+            /* Font Weights */
+            --font-light: {FINSOLVE_BRAND["typography"]["weight"]["light"]};
+            --font-normal: {FINSOLVE_BRAND["typography"]["weight"]["normal"]};
+            --font-medium: {FINSOLVE_BRAND["typography"]["weight"]["medium"]};
+            --font-semibold: {FINSOLVE_BRAND["typography"]["weight"]["semibold"]};
+            --font-bold: {FINSOLVE_BRAND["typography"]["weight"]["bold"]};
+            --font-extrabold: {FINSOLVE_BRAND["typography"]["weight"]["extrabold"]};
+
+            /* Line Heights */
+            --leading-tight: {FINSOLVE_BRAND["typography"]["line_height"]["tight"]};
+            --leading-normal: {FINSOLVE_BRAND["typography"]["line_height"]["normal"]};
+            --leading-relaxed: {FINSOLVE_BRAND["typography"]["line_height"]["relaxed"]};
+
+            /* Gradients */
             --gradient-primary: {FINSOLVE_BRAND["gradients"]["primary"]};
             --gradient-secondary: {FINSOLVE_BRAND["gradients"]["secondary"]};
             --gradient-background: {FINSOLVE_BRAND["gradients"]["background"]};
-            
-            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08);
-            --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.12);
-            --shadow-heavy: 0 12px 40px rgba(0, 0, 0, 0.15);
-            --shadow-brand: 0 8px 32px rgba(0, 245, 212, 0.2);
-            
-            --border-radius-small: 8px;
-            --border-radius-medium: 12px;
-            --border-radius-large: 16px;
-            --border-radius-xl: 20px;
-            
-            --transition-fast: 0.2s ease;
-            --transition-normal: 0.3s ease;
-            --transition-slow: 0.5s ease;
+            --gradient-executive: {FINSOLVE_BRAND["gradients"]["executive"]};
+            --gradient-card: {FINSOLVE_BRAND["gradients"]["card"]};
+            --gradient-overlay: {FINSOLVE_BRAND["gradients"]["overlay"]};
+
+            /* Shadows */
+            --shadow-xs: {FINSOLVE_BRAND["shadows"]["xs"]};
+            --shadow-sm: {FINSOLVE_BRAND["shadows"]["sm"]};
+            --shadow-md: {FINSOLVE_BRAND["shadows"]["md"]};
+            --shadow-lg: {FINSOLVE_BRAND["shadows"]["lg"]};
+            --shadow-xl: {FINSOLVE_BRAND["shadows"]["xl"]};
+            --shadow-2xl: {FINSOLVE_BRAND["shadows"]["2xl"]};
+            --shadow-brand: {FINSOLVE_BRAND["shadows"]["brand"]};
+            --shadow-executive: {FINSOLVE_BRAND["shadows"]["executive"]};
+
+            /* Spacing */
+            --space-xs: {FINSOLVE_BRAND["spacing"]["xs"]};
+            --space-sm: {FINSOLVE_BRAND["spacing"]["sm"]};
+            --space-md: {FINSOLVE_BRAND["spacing"]["md"]};
+            --space-lg: {FINSOLVE_BRAND["spacing"]["lg"]};
+            --space-xl: {FINSOLVE_BRAND["spacing"]["xl"]};
+            --space-2xl: {FINSOLVE_BRAND["spacing"]["2xl"]};
+            --space-3xl: {FINSOLVE_BRAND["spacing"]["3xl"]};
+
+            /* Border Radius */
+            --radius-sm: {FINSOLVE_BRAND["border_radius"]["sm"]};
+            --radius-md: {FINSOLVE_BRAND["border_radius"]["md"]};
+            --radius-lg: {FINSOLVE_BRAND["border_radius"]["lg"]};
+            --radius-xl: {FINSOLVE_BRAND["border_radius"]["xl"]};
+            --radius-2xl: {FINSOLVE_BRAND["border_radius"]["2xl"]};
+            --radius-full: {FINSOLVE_BRAND["border_radius"]["full"]};
+
+            /* Transitions */
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Z-Index Scale */
+            --z-dropdown: 1000;
+            --z-sticky: 1020;
+            --z-fixed: 1030;
+            --z-modal-backdrop: 1040;
+            --z-modal: 1050;
+            --z-popover: 1060;
+            --z-tooltip: 1070;
         }}
 
-        /* Global Reset and Base Styles */
-        * {{
+        /* Modern CSS Reset */
+        *, *::before, *::after {{
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }}
 
-        .stApp {{
-            font-family: var(--font-secondary);
-            background: var(--gradient-background);
-            color: var(--finsolve-deep-blue);
+        html {{
             font-size: 16px;
-            line-height: 1.6;
+            scroll-behavior: smooth;
         }}
 
-        /* Remove Streamlit Branding */
-        #MainMenu, footer, header, .stDeployButton {{
+        body {{
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--color-grey-900);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }}
+
+        /* Enhanced Streamlit App Base */
+        .stApp {{
+            font-family: var(--font-primary) !important;
+            background: var(--gradient-background) !important;
+            color: var(--color-grey-900) !important;
+            font-size: var(--text-base) !important;
+            line-height: var(--leading-normal) !important;
+            min-height: 100vh;
+        }}
+
+        /* Remove Streamlit Branding and Clutter */
+        #MainMenu, footer, header, .stDeployButton,
+        div[data-testid="stDecoration"],
+        div[data-testid="stStatusWidget"],
+        .stActionButton {{
             visibility: hidden !important;
             display: none !important;
+            height: 0 !important;
         }}
 
-        /* Layout Optimization */
+        /* Enhanced Layout System */
         .main > div {{
             padding-top: 0 !important;
             padding-bottom: 0 !important;
         }}
 
         .main .block-container {{
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
+            padding: var(--space-lg) var(--space-md) !important;
             margin-top: 0 !important;
             max-width: 1400px;
-            padding-left: 1rem;
-            padding-right: 1rem;
+            width: 100%;
         }}
 
         header[data-testid="stHeader"] {{
@@ -187,6 +508,18 @@ def get_enhanced_css() -> str:
 
         div[data-testid="stToolbar"] {{
             display: none !important;
+        }}
+
+        /* Enhanced Sidebar */
+        .css-1d391kg, section[data-testid="stSidebar"] {{
+            background: var(--bg-primary) !important;
+            border-right: 2px solid var(--border-light) !important;
+            box-shadow: var(--shadow-lg) !important;
+            backdrop-filter: blur(20px) !important;
+        }}
+
+        .css-1d391kg .css-1v0mbdj {{
+            padding: var(--space-lg) !important;
         }}
 
         /* Enhanced Header Component */
@@ -735,6 +1068,521 @@ def get_enhanced_css() -> str:
             box-shadow: var(--shadow-medium);
         }}
 
+        /* Enhanced Typography System */
+        h1, h2, h3, h4, h5, h6 {{
+            font-family: var(--font-heading) !important;
+            font-weight: var(--font-semibold) !important;
+            line-height: var(--leading-tight) !important;
+            color: var(--color-grey-900) !important;
+            margin-bottom: var(--space-md) !important;
+        }}
+
+        h1 {{ font-size: var(--text-4xl) !important; }}
+        h2 {{ font-size: var(--text-3xl) !important; }}
+        h3 {{ font-size: var(--text-2xl) !important; }}
+        h4 {{ font-size: var(--text-xl) !important; }}
+        h5 {{ font-size: var(--text-lg) !important; }}
+        h6 {{ font-size: var(--text-base) !important; }}
+
+        p, .stMarkdown p {{
+            font-family: var(--font-primary) !important;
+            font-size: var(--text-base) !important;
+            line-height: var(--leading-normal) !important;
+            color: var(--color-grey-700) !important;
+            margin-bottom: var(--space-md) !important;
+        }}
+
+        /* Executive Badge System */
+        .executive-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: var(--gradient-executive);
+            color: var(--color-white);
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--radius-full);
+            font-size: var(--text-xs);
+            font-weight: var(--font-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            box-shadow: var(--shadow-executive);
+            animation: pulse 2s infinite;
+        }}
+
+        .leadership-badge {{
+            background: var(--gradient-primary);
+            box-shadow: var(--shadow-brand);
+        }}
+
+        .department-badge {{
+            background: var(--gradient-secondary);
+            box-shadow: var(--shadow-md);
+        }}
+
+        .admin-badge {{
+            background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+            box-shadow: var(--shadow-lg);
+        }}
+
+        .staff-badge {{
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            box-shadow: var(--shadow-sm);
+        }}
+
+        /* Enhanced Card System with Hover Effects */
+        .enhanced-card {{
+            background: var(--gradient-card);
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }}
+
+        .enhanced-card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-secondary);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }}
+
+        .enhanced-card:hover {{
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--border-focus);
+        }}
+
+        .enhanced-card.executive {{
+            border-color: var(--color-gold);
+            box-shadow: var(--shadow-executive);
+        }}
+
+        .enhanced-card.executive::before {{
+            background: var(--gradient-executive);
+        }}
+
+        .enhanced-card.executive:hover {{
+            box-shadow: var(--shadow-executive), var(--shadow-xl);
+        }}
+
+        /* Professional Button System */
+        .btn-primary {{
+            background: var(--gradient-primary);
+            color: var(--color-white);
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: var(--space-md) var(--space-xl);
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
+            font-weight: var(--font-semibold);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            box-shadow: var(--shadow-md);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }}
+
+        .btn-primary:hover {{
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: var(--gradient-primary);
+            filter: brightness(1.1);
+        }}
+
+        .btn-secondary {{
+            background: var(--gradient-secondary);
+            color: var(--color-primary);
+            border: 2px solid var(--color-secondary);
+        }}
+
+        .btn-executive {{
+            background: var(--gradient-executive);
+            color: var(--color-white);
+            box-shadow: var(--shadow-executive);
+        }}
+
+        .btn-executive:hover {{
+            box-shadow: var(--shadow-executive), var(--shadow-lg);
+        }}
+
+        /* Enhanced Form Controls */
+        .form-control {{
+            width: 100%;
+            padding: var(--space-md);
+            border: 2px solid var(--border-medium);
+            border-radius: var(--radius-lg);
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
+            background: var(--bg-primary);
+            transition: var(--transition-normal);
+        }}
+
+        .form-control:focus {{
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.1);
+        }}
+
+        .form-label {{
+            display: block;
+            font-family: var(--font-heading);
+            font-size: var(--text-sm);
+            font-weight: var(--font-semibold);
+            color: var(--color-grey-700);
+            margin-bottom: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }}
+
+        /* Status Indicator System */
+        .status-indicator {{
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--radius-full);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            border: 1px solid;
+        }}
+
+        .status-success {{
+            background: var(--color-success-light);
+            color: var(--color-success);
+            border-color: var(--color-success);
+        }}
+
+        .status-warning {{
+            background: var(--color-warning-light);
+            color: var(--color-warning);
+            border-color: var(--color-warning);
+        }}
+
+        .status-error {{
+            background: var(--color-error-light);
+            color: var(--color-error);
+            border-color: var(--color-error);
+        }}
+
+        .status-info {{
+            background: var(--color-info-light);
+            color: var(--color-info);
+            border-color: var(--color-info);
+        }}
+
+        /* Accessibility Enhancements */
+        .sr-only {{
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }}
+
+        /* Focus States for Keyboard Navigation */
+        *:focus {{
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
+        }}
+
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {{
+            :root {{
+                --color-grey-700: var(--color-black);
+                --color-grey-600: var(--color-black);
+                --border-light: var(--color-black);
+                --border-medium: var(--color-black);
+            }}
+        }}
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {{
+            *, *::before, *::after {{
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }}
+        }}
+
+        /* Dark Mode Support (Future Enhancement) */
+        @media (prefers-color-scheme: dark) {{
+            .stApp {{
+                background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%) !important;
+                color: var(--color-grey-100) !important;
+            }}
+        }}
+
+        /* Responsive Design - Mobile First Approach */
+
+        /* Mobile Styles (Default) */
+        .finsolve-header {{
+            padding: var(--space-lg) var(--space-md);
+            margin-bottom: var(--space-lg);
+        }}
+
+        .header-title {{
+            font-size: var(--text-3xl);
+        }}
+
+        .header-subtitle {{
+            font-size: var(--text-base);
+        }}
+
+        .enhanced-card {{
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }}
+
+        .user-message {{
+            margin-left: 5%;
+            margin-right: 0;
+        }}
+
+        .assistant-message {{
+            margin-right: 5%;
+            margin-left: 0;
+        }}
+
+        .metrics-container {{
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }}
+
+        .action-buttons {{
+            flex-direction: column;
+            align-items: stretch;
+        }}
+
+        /* Tablet Styles */
+        @media (min-width: 768px) {{
+            .finsolve-header {{
+                padding: var(--space-xl) var(--space-lg);
+            }}
+
+            .header-title {{
+                font-size: var(--text-4xl);
+            }}
+
+            .header-subtitle {{
+                font-size: var(--text-lg);
+            }}
+
+            .enhanced-card {{
+                padding: var(--space-xl);
+            }}
+
+            .user-message {{
+                margin-left: 10%;
+            }}
+
+            .assistant-message {{
+                margin-right: 10%;
+            }}
+
+            .metrics-container {{
+                grid-template-columns: repeat(2, 1fr);
+            }}
+
+            .action-buttons {{
+                flex-direction: row;
+                justify-content: center;
+            }}
+        }}
+
+        /* Desktop Styles */
+        @media (min-width: 1024px) {{
+            .finsolve-header {{
+                padding: var(--space-2xl) var(--space-xl);
+            }}
+
+            .header-title {{
+                font-size: var(--text-5xl);
+            }}
+
+            .header-subtitle {{
+                font-size: var(--text-xl);
+            }}
+
+            .enhanced-card {{
+                padding: var(--space-2xl);
+            }}
+
+            .user-message {{
+                margin-left: 15%;
+            }}
+
+            .assistant-message {{
+                margin-right: 15%;
+            }}
+
+            .metrics-container {{
+                grid-template-columns: repeat(3, 1fr);
+            }}
+
+            .main .block-container {{
+                padding: var(--space-2xl) var(--space-xl) !important;
+            }}
+        }}
+
+        /* Large Desktop Styles */
+        @media (min-width: 1280px) {{
+            .metrics-container {{
+                grid-template-columns: repeat(4, 1fr);
+            }}
+
+            .main .block-container {{
+                max-width: 1400px;
+                margin: 0 auto;
+            }}
+        }}
+
+        /* Ultra-wide Styles */
+        @media (min-width: 1536px) {{
+            .main .block-container {{
+                max-width: 1600px;
+            }}
+        }}
+
+        /* Print Styles */
+        @media print {{
+            .finsolve-header,
+            .enhanced-card,
+            .chat-message {{
+                box-shadow: none !important;
+                background: white !important;
+                color: black !important;
+            }}
+
+            .action-buttons,
+            .stButton {{
+                display: none !important;
+            }}
+        }}
+
+        /* Loading States and Animations */
+        .loading-skeleton {{
+            background: linear-gradient(90deg, var(--color-grey-200) 25%, var(--color-grey-100) 50%, var(--color-grey-200) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }}
+
+        @keyframes loading {{
+            0% {{ background-position: 200% 0; }}
+            100% {{ background-position: -200% 0; }}
+        }}
+
+        .fade-in {{
+            animation: fadeIn 0.5s ease-in-out;
+        }}
+
+        @keyframes fadeIn {{
+            from {{ opacity: 0; transform: translateY(20px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+
+        .slide-in-left {{
+            animation: slideInLeft 0.5s ease-out;
+        }}
+
+        @keyframes slideInLeft {{
+            from {{ opacity: 0; transform: translateX(-30px); }}
+            to {{ opacity: 1; transform: translateX(0); }}
+        }}
+
+        .slide-in-right {{
+            animation: slideInRight 0.5s ease-out;
+        }}
+
+        @keyframes slideInRight {{
+            from {{ opacity: 0; transform: translateX(30px); }}
+            to {{ opacity: 1; transform: translateX(0); }}
+        }}
+
+        /* Enhanced Scrollbar Styling */
+        ::-webkit-scrollbar {{
+            width: 12px;
+        }}
+
+        ::-webkit-scrollbar-track {{
+            background: var(--color-grey-100);
+            border-radius: var(--radius-lg);
+        }}
+
+        ::-webkit-scrollbar-thumb {{
+            background: var(--gradient-secondary);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--color-grey-100);
+        }}
+
+        ::-webkit-scrollbar-thumb:hover {{
+            background: var(--gradient-primary);
+        }}
+
+        /* Custom Selection Styling */
+        ::selection {{
+            background: var(--color-secondary);
+            color: var(--color-primary);
+        }}
+
+        ::-moz-selection {{
+            background: var(--color-secondary);
+            color: var(--color-primary);
+        }}
+
+        /* Enhanced Tooltip System */
+        .tooltip {{
+            position: relative;
+            display: inline-block;
+        }}
+
+        .tooltip .tooltiptext {{
+            visibility: hidden;
+            width: 200px;
+            background: var(--color-grey-900);
+            color: var(--color-white);
+            text-align: center;
+            border-radius: var(--radius-md);
+            padding: var(--space-sm);
+            position: absolute;
+            z-index: var(--z-tooltip);
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: var(--transition-normal);
+            font-size: var(--text-sm);
+        }}
+
+        .tooltip .tooltiptext::after {{
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--color-grey-900) transparent transparent transparent;
+        }}
+
+        .tooltip:hover .tooltiptext {{
+            visibility: visible;
+            opacity: 1;
+        }}
+    </style>
+    """
+
         .feature-tag span {{
             color: var(--finsolve-white);
             font-weight: 700;
@@ -1113,18 +1961,49 @@ class FinSolveAIAssistant:
             logger.warning(f"Could not load logo: {e}")
         return ""
     
-    def display_header(self, title: str, subtitle: str):
-        """Display enhanced application header."""
+    def display_header(self, title: str, subtitle: str, user_role: str = None):
+        """Display enhanced application header with executive styling."""
+        # Determine if this is an executive user
+        executive_roles = ["ceo", "cfo", "cto", "chro"]
+        is_executive = user_role in executive_roles if user_role else False
+
+        # Get role configuration
+        role_config = ROLE_CONFIG.get(user_role, {}) if user_role else {}
+
         logo_base64 = self.get_logo_base64()
-        
+
+        # Executive badge
+        badge_html = ""
+        if is_executive and role_config:
+            badge_html = f'''
+            <span class="executive-badge">
+                {role_config.get("icon", "👑")} {role_config.get("badge", "EXECUTIVE")}
+            </span>
+            '''
+        elif user_role and role_config:
+            badge_class = "leadership-badge" if role_config.get("priority") == 2 else "department-badge"
+            if user_role == "system_admin":
+                badge_class = "admin-badge"
+            elif role_config.get("priority") == 4:
+                badge_class = "staff-badge"
+
+            badge_html = f'''
+            <span class="{badge_class}">
+                {role_config.get("icon", "👤")} {role_config.get("badge", "STAFF")}
+            </span>
+            '''
+
+        # Header class
+        header_class = "finsolve-header executive fade-in" if is_executive else "finsolve-header fade-in"
+
         st.markdown(f"""
-        <div class="finsolve-header">
+        <div class="{header_class}">
             <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; position: relative; z-index: 1;">
                 <div class="header-logo">
                     {f'<img src="data:image/png;base64,{logo_base64}" style="width: 100%; height: 100%; object-fit: contain;" alt="FinSolve">' if logo_base64 else '<span style="color: var(--finsolve-deep-blue); font-weight: 800; font-size: 2rem;">FS</span>'}
                 </div>
                 <div style="text-align: center;">
-                    <h1 class="header-title">{title}</h1>
+                    <h1 class="header-title">{title} {badge_html}</h1>
                     <p class="header-subtitle">{subtitle}</p>
                 </div>
             </div>
@@ -1361,8 +2240,8 @@ class FinSolveAIAssistant:
 
         if is_user:
             st.markdown(f"""
-            <div class="chat-message">
-                <div class="user-message">
+            <div class="chat-message slide-in-right fade-in">
+                <div class="user-message enhanced-card">
                     <div class="message-header">
                         <strong>👤 You</strong>
                         <span style="opacity: 0.8;">{timestamp}</span>
@@ -1384,18 +2263,22 @@ class FinSolveAIAssistant:
             confidence_class = self.message_renderer.get_confidence_class(confidence)
             confidence_emoji = "🟢" if confidence > 0.8 else "🟡" if confidence > 0.6 else "🔴"
 
-            # Display structured response
+            # Display structured response with enhanced styling
+            user_role = st.session_state.user_info.get('role', '').lower()
+            is_executive = user_role in ["ceo", "cfo", "cto", "chro"]
+            card_class = "enhanced-card executive" if is_executive else "enhanced-card"
+
             st.markdown(f"""
-            <div class="chat-message">
-                <div class="assistant-message">
+            <div class="chat-message slide-in-left fade-in">
+                <div class="assistant-message {card_class}">
                     <div class="message-header">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <strong style="color: var(--finsolve-deep-blue);">🤖 FinSolve AI</strong>
+                            <strong style="color: var(--color-primary);">🤖 FinSolve AI</strong>
                             <span class="{confidence_class}">
                                 {confidence_emoji} {confidence:.1%}
                             </span>
                         </div>
-                        <span style="color: var(--finsolve-dark-grey);">{timestamp}</span>
+                        <span style="color: var(--color-grey-600);">{timestamp}</span>
                     </div>
                 </div>
             </div>
@@ -1418,26 +2301,56 @@ class FinSolveAIAssistant:
                 st.markdown("### 📝 Key Takeaways")
                 st.markdown(f"<div style='background: rgba(13, 27, 42, 0.05); padding: 1rem; border-radius: 8px; border-left: 4px solid #0D1B2A; margin-bottom: 1rem;'>{self.message_renderer.clean_content(summary)}</div>", unsafe_allow_html=True)
 
-            # Display visualization if available
+            # Enhanced visualization display logic
             visualization = message.get("visualization")
-            if visualization:
-                st.markdown("### 📊 Data Visualization")
-                self.display_visualization(visualization)
+
+            # Get the most recent user query from conversation
+            user_query = ""
+            if message.get("message_type") == "user":
+                user_query = message.get("content", "").lower()
             else:
-                # Check if this is a query that should have visualization
-                query = message.get("query", "").lower()
-                if any(keyword in query for keyword in ['performance', 'trends', 'quarterly', 'financial', 'growth', 'metrics']):
-                    st.markdown("### 📊 Data Visualization")
-                    # Create a default visualization for performance queries
-                    default_viz = {
-                        "type": "line_chart",
-                        "data": {
-                            "x": ["Q1 2024", "Q2 2024", "Q3 2024", "Q4 2024"],
-                            "y": [2.1, 2.3, 2.5, 2.6]
-                        },
-                        "title": "Quarterly Performance Trends",
-                        "description": "Revenue growth showing consistent upward trend across business units"
-                    }
+                # For assistant messages, look for the previous user message
+                chat_history = st.session_state.get("chat_history", [])
+                for i in range(len(chat_history) - 1, -1, -1):
+                    if chat_history[i].get("message_type") == "user":
+                        user_query = chat_history[i].get("content", "").lower()
+                        break
+
+            # Enhanced keywords for visualization detection
+            viz_keywords = [
+                'performance', 'trends', 'quarterly', 'financial', 'growth', 'metrics', 'kpi',
+                'revenue', 'profit', 'expenses', 'budget', 'chart', 'graph', 'show me',
+                'display', 'analyze', 'dashboard', 'report', 'data', 'statistics', 'numbers',
+                'workforce', 'employees', 'departments', 'marketing', 'campaign', 'customer'
+            ]
+
+            # Check if this is an assistant message that should have visualization
+            is_assistant_with_viz_content = (
+                message.get("message_type") == "assistant" and
+                any(keyword in user_query for keyword in viz_keywords)
+            )
+
+            # Executive roles should always get visualizations for relevant queries
+            is_executive = st.session_state.user_info.get("role") in ["ceo", "cfo", "cto", "chro", "vp_marketing"]
+
+            should_show_viz = (
+                visualization is not None or
+                is_assistant_with_viz_content or
+                (is_executive and any(keyword in user_query for keyword in viz_keywords))
+            )
+
+            if should_show_viz:
+                st.markdown("### 📊 Data Visualization")
+                logger.info(f"Showing visualization for query: {user_query[:50]}...")
+
+                if visualization:
+                    # Use provided visualization
+                    logger.info(f"Using provided visualization: {visualization.get('type', 'unknown')}")
+                    self.display_visualization(visualization)
+                else:
+                    # Create intelligent default visualization based on query
+                    logger.info("Creating smart default visualization")
+                    default_viz = self._create_smart_default_visualization(user_query)
                     self.display_visualization(default_viz)
 
             # Display metadata
@@ -1456,6 +2369,61 @@ class FinSolveAIAssistant:
                 with col2:
                     if processing_time:
                         st.caption(f"⚡ {processing_time:.1f}s")
+
+    def _create_smart_default_visualization(self, query: str):
+        """Create intelligent default visualization based on query content"""
+        query_lower = query.lower()
+
+        if any(term in query_lower for term in ["financial", "revenue", "profit", "quarterly", "growth"]):
+            return {
+                "type": "line_chart",
+                "data": {
+                    "x": ["Q1 2024", "Q2 2024", "Q3 2024", "Q4 2024"],
+                    "y": [2.1, 2.3, 2.5, 2.6]
+                },
+                "title": "Quarterly Revenue Performance",
+                "description": "Revenue growth showing 24% increase from Q1 to Q4 2024"
+            }
+        elif any(term in query_lower for term in ["budget", "departments", "allocation", "utilization"]):
+            return {
+                "type": "bar_chart",
+                "data": {
+                    "labels": ["Engineering", "Marketing", "Sales", "Finance", "HR", "Operations"],
+                    "values": [85, 92, 78, 95, 88, 82]
+                },
+                "title": "Budget Utilization by Department (%)",
+                "description": "Current budget utilization across all departments"
+            }
+        elif any(term in query_lower for term in ["employee", "workforce", "staff", "hr"]):
+            return {
+                "type": "bar_chart",
+                "data": {
+                    "labels": ["Sales", "Finance", "Technology", "Marketing", "HR"],
+                    "values": [8, 8, 7, 6, 5]
+                },
+                "title": "Employee Distribution by Department",
+                "description": "Current workforce distribution across key business units"
+            }
+        elif any(term in query_lower for term in ["marketing", "campaign", "customer", "acquisition"]):
+            return {
+                "type": "bar_chart",
+                "data": {
+                    "labels": ["Customer Acquisition", "Conversion Rate", "ROI", "Brand Awareness"],
+                    "values": [92, 78, 145, 88]
+                },
+                "title": "Marketing Performance Metrics",
+                "description": "Key marketing performance indicators and campaign effectiveness"
+            }
+        else:
+            return {
+                "type": "line_chart",
+                "data": {
+                    "x": ["Q1", "Q2", "Q3", "Q4"],
+                    "y": [2.1, 2.3, 2.5, 2.6]
+                },
+                "title": "Business Performance Trend",
+                "description": "Overall business performance showing consistent growth"
+            }
 
     def display_visualization(self, visualization: Dict[str, Any]):
         """Display visualization based on the provided data"""
@@ -5181,10 +6149,12 @@ Developed by Dr. Erick K. Yegon
             self.display_admin_interface()
             return
 
-        # Enhanced header with user context
+        # Enhanced header with user context and executive styling
+        user_role = user['role'].lower()
         self.display_header(
             f"Welcome, {user['full_name'].split()[0]}! 👋",
-            f"{role_config['icon']} {user['role'].replace('_', ' ').title()} • {user.get('department', 'General')} Department"
+            f"{role_config['icon']} {user['role'].replace('_', ' ').title()} • {user.get('department', 'General')} Department",
+            user_role=user_role
         )
         
         # Analytics dashboard

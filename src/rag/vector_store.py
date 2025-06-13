@@ -241,10 +241,18 @@ class VectorStore:
                 logger.info("Using Euriai embeddings for enhanced quality")
                 return
 
-            # Fallback to sentence transformers
-            self.embedding_model = SentenceTransformer(self.embedding_model_name)
-            self.use_euriai = False
-            logger.info(f"Loaded embedding model: {self.embedding_model_name}")
+            # Fallback to sentence transformers with memory optimization
+            if SENTENCE_TRANSFORMERS_AVAILABLE:
+                # Use device='cpu' to avoid GPU memory issues and enable model sharing
+                self.embedding_model = SentenceTransformer(
+                    self.embedding_model_name,
+                    device='cpu',
+                    cache_folder=os.path.join(settings.chroma_persist_directory, 'models')
+                )
+                self.use_euriai = False
+                logger.info(f"Loaded embedding model: {self.embedding_model_name} (CPU optimized)")
+            else:
+                raise ImportError("SentenceTransformers not available")
         except Exception as e:
             logger.error(f"Failed to load embedding model: {str(e)}")
             raise
@@ -395,7 +403,7 @@ class VectorStore:
         # Department filtering based on role permissions
         accessible_departments = []
         
-        if user_role == UserRole.C_LEVEL:
+        if user_role in [UserRole.CEO, UserRole.CFO, UserRole.CTO, UserRole.CHRO, UserRole.VP_MARKETING]:
             accessible_departments = ["engineering", "finance", "hr", "marketing", "general"]
         elif user_role == UserRole.HR:
             accessible_departments = ["hr", "general"]
@@ -434,8 +442,9 @@ class VectorStore:
         content_lower = metadata.get("content", "").lower()
 
         if any(keyword in content_lower for keyword in sensitive_keywords):
-            # Only HR and C-level can access salary/compensation data
-            if user_role not in [UserRole.HR, UserRole.C_LEVEL]:
+            # Only HR and C-level executives can access salary/compensation data
+            executive_roles = [UserRole.HR, UserRole.CEO, UserRole.CFO, UserRole.CHRO]
+            if user_role not in executive_roles:
                 return False
 
         return True
@@ -504,10 +513,20 @@ class VectorStore:
             return False
     
     def _process_text_file(self, source) -> List[Document]:
-        """Process a text file into document chunks"""
+        """Process a text file into document chunks with error handling"""
         try:
-            with open(source.path, 'r', encoding='utf-8') as file:
-                content = file.read()
+            # Use more robust file reading with error handling
+            try:
+                with open(source.path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+            except UnicodeDecodeError:
+                # Try with different encoding if UTF-8 fails
+                with open(source.path, 'r', encoding='latin-1') as file:
+                    content = file.read()
+                logger.warning(f"Used latin-1 encoding for {source.path}")
+            except Exception as e:
+                logger.error(f"Failed to read file {source.path}: {str(e)}")
+                return []
             
             # Create comprehensive metadata (convert lists to strings for ChromaDB)
             usage_context = getattr(source, 'usage_context', [])

@@ -246,7 +246,7 @@ def create_default_users():
             "username": "cto.finsolve",
             "email": "cto@finsolve.com",
             "full_name": "Chief Technology Officer",
-            "password": "CTOpass123!",
+            "password": "CTO123!",
             "role": UserRole.CTO,
             "department": "Engineering",
             "employee_id": "CTO001"
@@ -255,7 +255,7 @@ def create_default_users():
             "username": "chro.finsolve",
             "email": "chro@finsolve.com",
             "full_name": "Chief Human Resources Officer",
-            "password": "CHROpass123!",
+            "password": "CHRO123!",
             "role": UserRole.CHRO,
             "department": "Human Resources",
             "employee_id": "CHRO001"
@@ -264,7 +264,7 @@ def create_default_users():
             "username": "vp.marketing",
             "email": "vp.marketing@finsolve.com",
             "full_name": "VP Marketing",
-            "password": "VPmarketing123!",
+            "password": "Marketing123!",
             "role": UserRole.VP_MARKETING,
             "department": "Marketing",
             "employee_id": "VPMKT001"

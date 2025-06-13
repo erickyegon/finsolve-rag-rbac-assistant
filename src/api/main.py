@@ -23,7 +23,7 @@ import sys
 from langserve import add_routes
 from langchain_core.runnables import RunnableLambda
 
-from ..core.config import settings
+from ..core.config import settings, UserRole
 from ..database.connection import init_database, db_manager
 from ..rag.vector_store import vector_store
 from ..agents.graph import finsolve_agent
@@ -269,7 +269,7 @@ async def api_info():
             "document_search": True,
             "structured_data_query": True
         },
-        "supported_roles": [role.value for role in settings.USER_ROLES],
+        "supported_roles": [role.value for role in UserRole],
         "timestamp": time.time()
     }
 

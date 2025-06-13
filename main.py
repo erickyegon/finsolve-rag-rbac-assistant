@@ -265,7 +265,7 @@ if __name__ == "__main__":
     async def shutdown(self):
         """Graceful shutdown"""
         logger.info("Shutting down FinSolve RBAC Chatbot...")
-        
+
         # Stop Streamlit process
         if self.streamlit_process and self.streamlit_process.poll() is None:
             logger.info("Stopping Streamlit app...")
@@ -274,7 +274,7 @@ if __name__ == "__main__":
                 self.streamlit_process.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 self.streamlit_process.kill()
-        
+
         # Stop API process
         if self.api_process and self.api_process.poll() is None:
             logger.info("Stopping API server...")
@@ -283,11 +283,21 @@ if __name__ == "__main__":
                 self.api_process.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 self.api_process.kill()
-        
+
+        # Clean up temporary files
+        logger.info("Cleaning up temporary files...")
+        temp_script_path = Path(__file__).parent / "temp_api_start.py"
+        if temp_script_path.exists():
+            try:
+                temp_script_path.unlink()
+                logger.info("Temporary API startup script removed")
+            except Exception as e:
+                logger.warning(f"Failed to remove temporary script: {e}")
+
         # Close database connections
         logger.info("Closing database connections...")
         db_manager.close()
-        
+
         logger.info("Shutdown completed")
         self.shutdown_event.set()
 
