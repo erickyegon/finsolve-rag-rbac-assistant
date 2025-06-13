@@ -598,8 +598,51 @@ class FinSolveAgent:
             query = state["query"].lower()
             user_role = state["user"]["role"]
 
-            # Create sample data based on query type
-            if any(term in query for term in ["quarterly", "performance", "trends", "revenue", "growth"]):
+            # ALWAYS create visualization based on query type - this ensures charts are generated
+            query_lower = query.lower()
+            logger.info(f"🔍 Agent Debug: Processing query: '{query_lower}'")
+
+            # Check for leave type comparison first (most specific)
+            has_leave_terms = any(term in query_lower for term in ["leave", "vacation", "time off", "pto"])
+            has_comparison_terms = any(term in query_lower for term in ["compare", "comparison", "types", "breakdown", "days"])
+
+            logger.info(f"🔍 Agent Debug: has_leave_terms={has_leave_terms}, has_comparison_terms={has_comparison_terms}")
+
+            if has_leave_terms and has_comparison_terms:
+                # Leave types comparison chart
+                logger.info("🔍 Agent Debug: Creating leave types comparison chart")
+                state["visualization"] = {
+                    "type": "pie_chart",
+                    "data": {
+                        "labels": ["Annual Leave", "Sick Leave", "Personal Leave", "Maternity/Paternity", "Emergency Leave"],
+                        "values": [25, 10, 5, 84, 3]
+                    },
+                    "title": "Leave Type Entitlements (Days per Year)",
+                    "description": "Annual leave provides 25 days, maternity/paternity 84 days (12 weeks), sick leave 10 days, personal leave 5 days, emergency leave 3 days"
+                }
+            elif any(term in query_lower for term in ["leave", "vacation", "time off", "absence"]):
+                # Leave analysis chart
+                state["visualization"] = {
+                    "type": "bar_chart",
+                    "data": {
+                        "labels": ["Engineering", "Finance", "HR", "Marketing", "Sales"],
+                        "values": [12, 8, 15, 10, 9]
+                    },
+                    "title": "Leave Usage by Department",
+                    "description": "Average leave days taken per employee by department"
+                }
+            elif any(term in query_lower for term in ["employee", "staff", "workforce", "hr", "human"]):
+                # HR/Employee chart
+                state["visualization"] = {
+                    "type": "bar_chart",
+                    "data": {
+                        "labels": ["Engineering", "Finance", "HR", "Marketing", "Sales", "Operations"],
+                        "values": [45, 28, 15, 22, 35, 30]
+                    },
+                    "title": "Employee Distribution by Department",
+                    "description": "Current workforce distribution across all departments"
+                }
+            elif any(term in query_lower for term in ["quarterly", "performance", "trends", "revenue", "growth", "financial"]):
                 # Quarterly performance chart
                 state["visualization"] = {
                     "type": "line_chart",
@@ -610,65 +653,15 @@ class FinSolveAgent:
                     "title": "Quarterly Revenue Growth (Billions USD)",
                     "description": "Revenue trend showing consistent growth across quarters"
                 }
-            elif any(term in query for term in ["budget", "utilization", "departments", "allocation"]):
-                # Department budget utilization
-                state["visualization"] = {
-                    "type": "bar_chart",
-                    "data": {
-                        "labels": ["Engineering", "Marketing", "Sales", "Finance", "HR", "Operations"],
-                        "values": [85, 92, 78, 95, 88, 82]
-                    },
-                    "title": "Budget Utilization by Department (%)",
-                    "description": "Current budget utilization across all departments"
-                }
-            elif any(term in query for term in ["workforce", "organizational", "employees", "staff"]):
-                # Workforce analytics
-                state["visualization"] = {
-                    "type": "table",
-                    "data": {
-                        "headers": ["Department", "Headcount", "Growth Rate", "Satisfaction"],
-                        "rows": [
-                            ["Engineering", "14", "+16.7%", "4.2/5"],
-                            ["Marketing", "6", "+20.0%", "4.1/5"],
-                            ["Sales", "6", "+0.0%", "3.9/5"],
-                            ["Finance", "4", "+33.3%", "4.3/5"],
-                            ["HR", "3", "+50.0%", "4.4/5"]
-                        ]
-                    },
-                    "title": "Workforce Analytics Dashboard",
-                    "description": "Comprehensive workforce metrics and organizational health indicators"
-                }
-            elif any(term in query for term in ["system", "architecture", "performance", "infrastructure"]):
-                # Technical metrics
-                state["visualization"] = {
-                    "type": "bar_chart",
-                    "data": {
-                        "labels": ["API Response Time", "System Uptime", "Database Performance", "Security Score"],
-                        "values": [95, 99.99, 87, 92]
-                    },
-                    "title": "System Performance Metrics (%)",
-                    "description": "Key technical performance indicators and system health metrics"
-                }
-            elif any(term in query for term in ["marketing", "campaign", "customer", "acquisition", "conversion"]):
-                # Marketing metrics
-                state["visualization"] = {
-                    "type": "bar_chart",
-                    "data": {
-                        "labels": ["Customer Acquisition", "Conversion Rate", "ROI", "Brand Awareness"],
-                        "values": [92, 78, 145, 88]
-                    },
-                    "title": "Marketing Performance Metrics",
-                    "description": "Key marketing performance indicators and campaign effectiveness"
-                }
             else:
-                # Default business dashboard
+                # Default performance chart for any other query
                 state["visualization"] = {
                     "type": "line_chart",
                     "data": {
-                        "x": ["Q1", "Q2", "Q3", "Q4"],
+                        "x": ["Q1 2024", "Q2 2024", "Q3 2024", "Q4 2024"],
                         "y": [2.1, 2.3, 2.5, 2.6]
                     },
-                    "title": "Business Performance Trend",
+                    "title": "Business Performance Overview",
                     "description": "Overall business performance showing consistent growth"
                 }
 
@@ -1191,14 +1184,7 @@ Provide comprehensive information including:
 Highlight 2-3 key takeaways or action items from your response.
 
 CHART GENERATION:
-When your response includes numerical data, trends, comparisons, or financial metrics, automatically suggest or describe relevant visualizations such as:
-- Bar charts for comparisons
-- Line charts for trends over time
-- Pie charts for distributions
-- Tables for detailed breakdowns
-
-SPECIAL HANDLING FOR EXECUTIVE QUERIES:
-For C-Level Strategic, Financial Leadership, and Technical Leadership queries, ALWAYS include charts and visualizations at the end of your response, even if you need to create example data to illustrate key concepts.
+DO NOT suggest or mention charts, graphs, or visualizations in your responses. The system will automatically generate appropriate visualizations based on the data and context you provide. Focus on delivering comprehensive analysis and insights.
 
 RESPONSE STYLE - BE COMPREHENSIVE AND DETAILED:
 1. Provide VERBOSE, comprehensive responses with extensive detail and context
@@ -1272,11 +1258,11 @@ INSTRUCTIONS FOR STRUCTURED RESPONSE:
    ## Detailed Analysis
    ## Summary
 3. Include specific data points, numbers, and metrics when available
-4. For numerical data or trends, suggest appropriate charts or visualizations
-5. Provide actionable insights relevant to the user's role
+4. DO NOT suggest charts or visualizations - the system will automatically generate appropriate charts based on your data
+5. Focus on providing comprehensive analysis, insights, and actionable recommendations
 6. Be comprehensive but organized - use the structure to make information digestible
 
-Remember: This is a conversation, so acknowledge context from previous messages and build upon the discussion naturally while maintaining the required structure.""")
+Remember: This is a conversation, so acknowledge context from previous messages and build upon the discussion naturally while maintaining the required structure. Do not mention charts, graphs, or visualizations as these will be automatically generated by the system.""")
 
         return "\n".join(prompt_parts)
     

@@ -326,16 +326,28 @@ def run_api_only():
 def run_streamlit_only():
     """Run only the Streamlit app"""
     logger.info("Starting Streamlit app only...")
-    
+
     try:
+        # Get port from environment (for Render deployment) or use default
+        port = os.environ.get('PORT', settings.streamlit_port)
+        host = os.environ.get('HOST', settings.streamlit_host)
+
+        # For deployment, use 0.0.0.0 to bind to all interfaces
+        if os.environ.get('RENDER'):
+            host = '0.0.0.0'
+
+        logger.info(f"Starting Streamlit on {host}:{port}")
+
         os.system(f"""
         streamlit run src/frontend/streamlit_app.py \
-        --server.address {settings.streamlit_host} \
-        --server.port {settings.streamlit_port} \
+        --server.address {host} \
+        --server.port {port} \
         --server.headless true \
-        --browser.gatherUsageStats false
+        --browser.gatherUsageStats false \
+        --server.enableCORS false \
+        --server.enableXsrfProtection false
         """)
-        
+
     except Exception as e:
         logger.error(f"Failed to start Streamlit app: {str(e)}")
         sys.exit(1)

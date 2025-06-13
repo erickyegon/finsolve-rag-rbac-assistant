@@ -3,7 +3,7 @@
 Intelligent Chart Generator
 Automatically creates professional charts and visualizations based on query context and data type.
 
-Author: Peter Pandey
+Author: Dr. Erick Yegon
 Version: 1.0.0
 """
 
