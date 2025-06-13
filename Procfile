@@ -1,1 +1,1 @@
-web: python main.py --mode streamlit
+web: python streamlit_app.py

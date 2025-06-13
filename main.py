@@ -356,7 +356,17 @@ def run_streamlit_only():
 def main():
     """Main entry point"""
     import argparse
-    
+
+    # Check for deployment mode environment variable
+    deployment_mode = os.environ.get('DEPLOYMENT_MODE')
+
+    if deployment_mode == 'streamlit':
+        # For Streamlit deployment, run the full application
+        logger.info("Running in Streamlit deployment mode")
+        app = FinSolveApplication()
+        asyncio.run(app.run())
+        return
+
     parser = argparse.ArgumentParser(description="FinSolve RBAC Chatbot")
     parser.add_argument(
         "--mode",
@@ -364,9 +374,9 @@ def main():
         default="full",
         help="Run mode: full (both), api (API only), or streamlit (Streamlit only)"
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.mode == "api":
         run_api_only()
     elif args.mode == "streamlit":

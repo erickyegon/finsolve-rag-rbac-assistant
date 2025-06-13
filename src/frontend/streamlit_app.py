@@ -25,17 +25,28 @@ from io import BytesIO
 import html
 import re
 from loguru import logger
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 
 # Email service import
 try:
     import sys
+    import os
     project_root = Path(__file__).parent.parent.parent
     sys.path.insert(0, str(project_root))
     from src.utils.email_service import email_service
 except ImportError:
     email_service = None
     logger.warning("Email service not available - inquiry emails will be disabled")
+
+# Database initialization import
+try:
+    from src.database.connection import init_database, create_default_users
+    from src.core.config import settings
+except ImportError as e:
+    logger.error(f"Failed to import database modules: {e}")
+    init_database = None
+    create_default_users = None
 
 # ============================
 # CONFIGURATION & CONSTANTS
@@ -1243,12 +1254,36 @@ class FinSolveAIAssistant:
 
     def __init__(self):
         """Initialize the application."""
+        # Initialize database first
+        self.initialize_database()
+
         SessionManager.initialize()
         self.api_client = APIClient()
         self.message_renderer = MessageRenderer()
-        
+
         # Apply enhanced styling
         st.markdown(get_enhanced_css(), unsafe_allow_html=True)
+
+    def initialize_database(self):
+        """Initialize database and create default users for Streamlit deployment."""
+        try:
+            if init_database and create_default_users:
+                logger.info("Initializing database for Streamlit deployment...")
+
+                # Initialize database tables
+                init_database()
+
+                # Create default users
+                create_default_users()
+
+                logger.info("Database initialization completed successfully")
+            else:
+                logger.warning("Database initialization functions not available")
+
+        except Exception as e:
+            logger.error(f"Database initialization failed: {str(e)}")
+            # Don't fail the app, just log the error
+            st.warning("⚠️ Database initialization failed. Some features may not work properly.")
     
     def get_logo_base64(self) -> str:
         """Get FinSolve logo as base64 string with fallback."""
@@ -1305,6 +1340,10 @@ class FinSolveAIAssistant:
         """Display demo credentials with enhanced styling."""
         st.markdown("### 🎯 Demo Access")
         st.markdown("*Choose your role for instant access*")
+
+        # Add a note about database initialization
+        if hasattr(self, '_db_init_attempted'):
+            st.info("💡 Demo users have been initialized. Try logging in with any of the credentials below.")
 
         demo_users = [
             {"username": "ceo.finsolve", "password": "CEO123!", "role": "Chief Executive Officer", "icon": "👑"},
