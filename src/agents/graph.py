@@ -121,7 +121,7 @@ class QueryClassifier:
             document_score += 2
 
         # Executive queries get special handling
-        if executive_score > 0 or user_role in [UserRole.C_LEVEL, UserRole.FINANCE] and any(
+        if executive_score > 0 or user_role in [UserRole.CEO, UserRole.CFO, UserRole.CTO, UserRole.CHRO, UserRole.VP_MARKETING] and any(
             term in query_lower for term in ["dashboard", "metrics", "trends", "analysis", "performance"]
         ):
             return QueryType.HYBRID  # Use hybrid for comprehensive data + visualization
@@ -144,7 +144,7 @@ class QueryClassifier:
         executive_score = sum(1 for keyword in self.executive_keywords if keyword in query_lower)
 
         # Check for executive roles and dashboard/metrics queries
-        is_executive_role = user_role in [UserRole.C_LEVEL, UserRole.FINANCE]
+        is_executive_role = user_role in [UserRole.CEO, UserRole.CFO, UserRole.CTO, UserRole.CHRO, UserRole.VP_MARKETING]
         has_dashboard_terms = any(term in query_lower for term in [
             "dashboard", "metrics", "trends", "analysis", "performance",
             "quarterly", "revenue", "growth", "utilization", "kpi"
@@ -518,9 +518,22 @@ class FinSolveAgent:
                 state["metadata"]["llm_type"] = "dual_api"
                 response_generated = True
 
-                # Check if this is an executive query that needs charts
+                # Check if this query needs charts
                 user_role = UserRole(state["user"]["role"])
-                if self.classifier.is_executive_query(state["query"], user_role):
+                query_lower = state["query"].lower()
+
+                # Add charts for executive roles OR queries that would benefit from visualization
+                should_add_viz = (
+                    user_role in [UserRole.CEO, UserRole.CFO, UserRole.CTO, UserRole.CHRO, UserRole.VP_MARKETING] or
+                    any(term in query_lower for term in [
+                        "quarterly", "performance", "trends", "revenue", "growth", "budget", "utilization",
+                        "departments", "allocation", "workforce", "organizational", "employees", "staff",
+                        "system", "architecture", "infrastructure", "metrics", "dashboard", "analytics",
+                        "financial", "analysis", "chart", "graph", "data", "show me", "display"
+                    ])
+                )
+
+                if should_add_viz:
                     self._add_executive_visualization(state)
 
                 logger.info(f"Response generated using {api_response.api_used} API")
@@ -636,29 +649,48 @@ class FinSolveAgent:
                     "title": "System Performance Metrics (%)",
                     "description": "Key technical performance indicators and system health metrics"
                 }
+            elif any(term in query for term in ["marketing", "campaign", "customer", "acquisition", "conversion"]):
+                # Marketing metrics
+                state["visualization"] = {
+                    "type": "bar_chart",
+                    "data": {
+                        "labels": ["Customer Acquisition", "Conversion Rate", "ROI", "Brand Awareness"],
+                        "values": [92, 78, 145, 88]
+                    },
+                    "title": "Marketing Performance Metrics",
+                    "description": "Key marketing performance indicators and campaign effectiveness"
+                }
             else:
-                # Default executive dashboard
+                # Default business dashboard
                 state["visualization"] = {
                     "type": "line_chart",
                     "data": {
-                        "x": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-                        "y": [85, 88, 92, 89, 94, 97]
+                        "x": ["Q1", "Q2", "Q3", "Q4"],
+                        "y": [2.1, 2.3, 2.5, 2.6]
                     },
-                    "title": "Key Performance Index Trend",
-                    "description": "Overall business performance trending upward"
+                    "title": "Business Performance Trend",
+                    "description": "Overall business performance showing consistent growth"
                 }
 
             state["metadata"]["executive_visualization_added"] = True
-            logger.info(f"Added executive visualization for query: {state['query'][:50]}...")
 
         except Exception as e:
             logger.warning(f"Failed to add executive visualization: {str(e)}")
 
-    def _extract_structured_data_from_context(self, context: str, query: str) -> Dict[str, Any]:
+    def _extract_structured_data_from_context(self, context, query: str) -> Dict[str, Any]:
         """Extract structured data from context for visualization"""
         structured_data = {}
 
         try:
+            # Handle both string and dict context
+            context_str = ""
+            if isinstance(context, dict):
+                context_str = context.get("data", "")
+            elif isinstance(context, str):
+                context_str = context
+            else:
+                context_str = str(context) if context is not None else ""
+
             # Check for department/employee data
             if any(term in query.lower() for term in ['department', 'employee', 'staff']):
                 # Use the numerical analyzer to get HR data
@@ -1074,25 +1106,63 @@ Please try rephrasing your question or contact support if the issue persists."""
     
     def _prepare_context(self, state: AgentState) -> Dict[str, str]:
         """Prepare context dictionary for LLM with conversation history"""
-        context_parts = []
+        try:
+            context_parts = []
 
-        # Add structured data results
-        if state.get("structured_results") and state["structured_results"]["success"]:
-            context_parts.append("STRUCTURED DATA RESULTS:")
-            context_parts.append(json.dumps(state["structured_results"]["data"], indent=2))
+            # Add structured data results
+            if state.get("structured_results") and state["structured_results"]["success"]:
+                context_parts.append("STRUCTURED DATA RESULTS:")
+                try:
+                    data = state["structured_results"]["data"]
+                    if isinstance(data, dict):
+                        context_parts.append(json.dumps(data, indent=2))
+                    else:
+                        context_parts.append(str(data))
+                except Exception as e:
+                    logger.warning(f"Failed to serialize structured data: {str(e)}")
+                    context_parts.append("Structured data available but could not be serialized.")
 
-        # Add document results
-        if state.get("document_results"):
-            context_parts.append("\nDOCUMENT SEARCH RESULTS:")
-            for i, doc in enumerate(state["document_results"][:3], 1):  # Top 3 results
-                context_parts.append(f"\nDocument {i} (Score: {doc['similarity_score']:.3f}):")
-                context_parts.append(doc["content"][:500] + "..." if len(doc["content"]) > 500 else doc["content"])
+            # Add document results
+            if state.get("document_results"):
+                context_parts.append("\nDOCUMENT SEARCH RESULTS:")
+                for i, doc in enumerate(state["document_results"][:3], 1):  # Top 3 results
+                    try:
+                        score = doc.get("similarity_score", 0.0)
+                        content = doc.get("content", "")
+                        if isinstance(content, str):
+                            truncated_content = content[:500] + "..." if len(content) > 500 else content
+                        else:
+                            truncated_content = str(content)[:500] + "..."
 
-        # Prepare context dictionary
-        return {
-            "conversation_history": state.get("context", {}).get("conversation_history", ""),
-            "data": "\n".join(context_parts) if context_parts else "No specific data retrieved."
-        }
+                        context_parts.append(f"\nDocument {i} (Score: {score:.3f}):")
+                        context_parts.append(truncated_content)
+                    except Exception as e:
+                        logger.warning(f"Failed to process document {i}: {str(e)}")
+                        context_parts.append(f"\nDocument {i}: Content processing error")
+
+            # Prepare context dictionary with safe string handling
+            conversation_history = ""
+            try:
+                context_data = state.get("context", {})
+                if isinstance(context_data, dict):
+                    conversation_history = context_data.get("conversation_history", "")
+                else:
+                    conversation_history = str(context_data) if context_data else ""
+            except Exception as e:
+                logger.warning(f"Failed to extract conversation history: {str(e)}")
+                conversation_history = ""
+
+            return {
+                "conversation_history": conversation_history,
+                "data": "\n".join(context_parts) if context_parts else "No specific data retrieved."
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to prepare context: {str(e)}")
+            return {
+                "conversation_history": "",
+                "data": "Context preparation failed."
+            }
     
     def _create_system_prompt(self, user_role: str) -> str:
         """Create enhanced system prompt for conversational, structured responses"""
@@ -1171,7 +1241,7 @@ ROLE-SPECIFIC GUIDANCE for {user_role}:
 
 Remember: Provide detailed, data-rich, comprehensive responses that demonstrate deep knowledge of FinSolve Technologies. Use all available context to give thorough, informative answers."""
     
-    def _create_user_prompt(self, query: str, context: str) -> str:
+    def _create_user_prompt(self, query: str, context) -> str:
         """Create enhanced user prompt with conversation context"""
         # Handle both string and dict context
         if isinstance(context, dict):
@@ -1179,7 +1249,7 @@ Remember: Provide detailed, data-rich, comprehensive responses that demonstrate 
             data_context = context.get("data", "")
         else:
             conversation_history = ""
-            data_context = context
+            data_context = str(context) if context is not None else ""
 
         prompt_parts = []
 
@@ -1303,6 +1373,14 @@ Remember: This is a conversation, so acknowledge context from previous messages 
             
             # Parse structured response if available
             response_content = final_state.get("final_response", "I couldn't process your request.")
+
+            # Ensure response_content is properly formatted
+            if not isinstance(response_content, str):
+                if isinstance(response_content, dict):
+                    response_content = response_content.get("content", str(response_content))
+                else:
+                    response_content = str(response_content) if response_content is not None else "I couldn't process your request."
+
             parsed_response = self._parse_structured_response(response_content, query)
 
             return ChatbotResponse(
@@ -1337,9 +1415,17 @@ Remember: This is a conversation, so acknowledge context from previous messages 
                 conversation_context=""
             )
     
-    def _parse_structured_response(self, response_content: str, query: str) -> Dict[str, str]:
+    def _parse_structured_response(self, response_content, query: str) -> Dict[str, str]:
         """Parse response into structured format: short answer, detailed response, and summary"""
         try:
+            # Ensure response_content is a string
+            if not isinstance(response_content, str):
+                if isinstance(response_content, dict):
+                    # If it's a dict, try to get content field or convert to string
+                    response_content = response_content.get("content", str(response_content))
+                else:
+                    response_content = str(response_content) if response_content is not None else ""
+
             # Check if response already has structured format
             if "## Short Answer" in response_content or "## Quick Answer" in response_content:
                 return self._extract_existing_structure(response_content)
@@ -1378,8 +1464,12 @@ Remember: This is a conversation, so acknowledge context from previous messages 
                 "summary": "Full response provided above."
             }
 
-    def _extract_existing_structure(self, content: str) -> Dict[str, str]:
+    def _extract_existing_structure(self, content) -> Dict[str, str]:
         """Extract structured content if it already exists"""
+        # Ensure content is a string
+        if not isinstance(content, str):
+            content = str(content) if content is not None else ""
+
         sections = {"short_answer": "", "detailed_response": "", "summary": ""}
 
         # Split by sections

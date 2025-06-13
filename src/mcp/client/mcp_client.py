@@ -116,7 +116,26 @@ class MCPClient:
 
             # Use FastMCP's call_tool method
             result = await server.call_tool(tool_name, arguments)
-            return json.dumps(result) if not isinstance(result, str) else result
+
+            # Handle TextContent objects and other MCP types
+            if hasattr(result, 'text'):
+                # This is a TextContent object
+                return result.text
+            elif hasattr(result, '__dict__'):
+                # Convert object to dict and then to JSON
+                result_dict = {}
+                for key, value in result.__dict__.items():
+                    if hasattr(value, 'text'):
+                        result_dict[key] = value.text
+                    elif isinstance(value, (str, int, float, bool, list, dict)):
+                        result_dict[key] = value
+                    else:
+                        result_dict[key] = str(value)
+                return json.dumps(result_dict)
+            elif isinstance(result, str):
+                return result
+            else:
+                return json.dumps(result)
 
         except Exception as e:
             logger.error(f"Error calling HR tool {tool_name}: {str(e)}")
@@ -129,7 +148,26 @@ class MCPClient:
 
             # Use FastMCP's call_tool method
             result = await server.call_tool(tool_name, arguments)
-            return json.dumps(result) if not isinstance(result, str) else result
+
+            # Handle TextContent objects and other MCP types
+            if hasattr(result, 'text'):
+                # This is a TextContent object
+                return result.text
+            elif hasattr(result, '__dict__'):
+                # Convert object to dict and then to JSON
+                result_dict = {}
+                for key, value in result.__dict__.items():
+                    if hasattr(value, 'text'):
+                        result_dict[key] = value.text
+                    elif isinstance(value, (str, int, float, bool, list, dict)):
+                        result_dict[key] = value
+                    else:
+                        result_dict[key] = str(value)
+                return json.dumps(result_dict)
+            elif isinstance(result, str):
+                return result
+            else:
+                return json.dumps(result)
 
         except Exception as e:
             logger.error(f"Error calling Finance tool {tool_name}: {str(e)}")
@@ -142,7 +180,26 @@ class MCPClient:
 
             # Use FastMCP's call_tool method
             result = await server.call_tool(tool_name, arguments)
-            return json.dumps(result) if not isinstance(result, str) else result
+
+            # Handle TextContent objects and other MCP types
+            if hasattr(result, 'text'):
+                # This is a TextContent object
+                return result.text
+            elif hasattr(result, '__dict__'):
+                # Convert object to dict and then to JSON
+                result_dict = {}
+                for key, value in result.__dict__.items():
+                    if hasattr(value, 'text'):
+                        result_dict[key] = value.text
+                    elif isinstance(value, (str, int, float, bool, list, dict)):
+                        result_dict[key] = value
+                    else:
+                        result_dict[key] = str(value)
+                return json.dumps(result_dict)
+            elif isinstance(result, str):
+                return result
+            else:
+                return json.dumps(result)
 
         except Exception as e:
             logger.error(f"Error calling Document tool {tool_name}: {str(e)}")

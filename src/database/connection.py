@@ -227,11 +227,47 @@ def create_default_users():
         {
             "username": "ceo.finsolve",
             "email": "ceo@finsolve.com",
-            "full_name": "Dr. Erick K. Yegon",
-            "password": "CEOPass123!",
+            "full_name": "Chief Executive Officer",
+            "password": "CEO123!",
             "role": UserRole.CEO,
             "department": "Executive",
             "employee_id": "CEO001"
+        },
+        {
+            "username": "cfo.finsolve",
+            "email": "cfo@finsolve.com",
+            "full_name": "Chief Financial Officer",
+            "password": "CFO123!",
+            "role": UserRole.CFO,
+            "department": "Finance",
+            "employee_id": "CFO001"
+        },
+        {
+            "username": "cto.finsolve",
+            "email": "cto@finsolve.com",
+            "full_name": "Chief Technology Officer",
+            "password": "CTOpass123!",
+            "role": UserRole.CTO,
+            "department": "Engineering",
+            "employee_id": "CTO001"
+        },
+        {
+            "username": "chro.finsolve",
+            "email": "chro@finsolve.com",
+            "full_name": "Chief Human Resources Officer",
+            "password": "CHROpass123!",
+            "role": UserRole.CHRO,
+            "department": "Human Resources",
+            "employee_id": "CHRO001"
+        },
+        {
+            "username": "vp.marketing",
+            "email": "vp.marketing@finsolve.com",
+            "full_name": "VP Marketing",
+            "password": "VPmarketing123!",
+            "role": UserRole.VP_MARKETING,
+            "department": "Marketing",
+            "employee_id": "VPMKT001"
         },
         {
             "username": "john.doe",

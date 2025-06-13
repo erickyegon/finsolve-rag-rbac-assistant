@@ -62,11 +62,27 @@ async def send_message(
         )
         
         # Process query through LangGraph agent
-        response = await finsolve_agent.process_query(
-            query=message.content,
-            user=current_user,
-            session_id=session_id
-        )
+        try:
+            response = await finsolve_agent.process_query(
+                query=message.content,
+                user=current_user,
+                session_id=session_id
+            )
+        except Exception as agent_error:
+            logger.error(f"Agent processing failed: {str(agent_error)}")
+            # Create a fallback response
+            response = ChatbotResponse(
+                content="I apologize, but I encountered an error processing your request. Please try again or rephrase your question.",
+                short_answer="Processing error occurred.",
+                detailed_response="I encountered an error while processing your request. Please try again or rephrase your question.",
+                summary="Please try again with a different question.",
+                sources=[],
+                confidence_score=0.0,
+                processing_time=0.0,
+                query_type=QueryType.GENERAL,
+                metadata={"error": str(agent_error)},
+                conversation_context=""
+            )
         
         # Create enhanced response object
         chat_response = ChatResponse(
@@ -464,16 +480,51 @@ async def get_query_suggestions(
             "How do we handle security?",
             "What is our deployment pipeline?"
         ],
-        UserRole.C_LEVEL: [
-            "Give me a company overview",
-            "What are our key performance metrics?",
-            "Show me financial and operational highlights",
-            "What are our strategic initiatives?",
-            "How are we performing against our goals?"
+        UserRole.CEO: [
+            "Show me quarterly performance trends across all business units",
+            "What are our key operational efficiency metrics?",
+            "Display workforce analytics and organizational health indicators",
+            "Generate executive dashboard with real-time KPIs",
+            "Give me a comprehensive company overview"
+        ],
+        UserRole.CFO: [
+            "Analyze revenue growth and margin trends by quarter",
+            "What is our current budget utilization across departments?",
+            "Show customer acquisition cost and lifetime value analysis",
+            "Generate financial executive summary for board presentation",
+            "What are our major financial risks and opportunities?"
+        ],
+        UserRole.CTO: [
+            "Explain our system architecture and security framework",
+            "What are our current system performance metrics?",
+            "Show technical debt analysis and optimization opportunities",
+            "Display infrastructure utilization and scaling metrics",
+            "What are our technology roadmap priorities?"
+        ],
+        UserRole.CHRO: [
+            "Display workforce analytics and organizational health indicators",
+            "What are our employee engagement and retention metrics?",
+            "Show performance management and development trends",
+            "Analyze compensation and benefits effectiveness",
+            "What are our diversity and inclusion progress metrics?"
+        ],
+        UserRole.VP_MARKETING: [
+            "Show marketing campaign performance and ROI analysis",
+            "What are our customer acquisition and conversion metrics?",
+            "Display brand awareness and market share trends",
+            "Analyze digital marketing effectiveness across channels",
+            "What are our competitive positioning insights?"
         ]
     }
     
-    user_suggestions = suggestions.get(current_user.role, suggestions[UserRole.EMPLOYEE])
+    # Get suggestions for user role, with fallback to CEO for executive roles not found
+    user_suggestions = suggestions.get(current_user.role)
+    if not user_suggestions:
+        # Fallback for executive roles
+        if current_user.role in [UserRole.CEO, UserRole.CFO, UserRole.CTO, UserRole.CHRO, UserRole.VP_MARKETING]:
+            user_suggestions = suggestions[UserRole.CEO]
+        else:
+            user_suggestions = suggestions[UserRole.EMPLOYEE]
     
     return {
         "suggestions": user_suggestions,

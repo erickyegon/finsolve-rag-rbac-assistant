@@ -39,6 +39,10 @@ class UserRole(str, Enum):
     MARKETING = "marketing"
     ENGINEERING = "engineering"
     CEO = "ceo"  # Chief Executive Officer - highest business access
+    CFO = "cfo"  # Chief Financial Officer - financial leadership
+    CTO = "cto"  # Chief Technology Officer - technical leadership
+    CHRO = "chro"  # Chief Human Resources Officer - HR leadership
+    VP_MARKETING = "vp_marketing"  # VP Marketing - marketing leadership
     SYSTEM_ADMIN = "system_admin"  # System Administrator - user management and system control
 
 
@@ -246,6 +250,46 @@ class RolePermissions:
             "can_view_all_data": True,
             "can_access_executive_reports": True,
             "can_view_financial_details": True,
+            "can_access_strategic_data": True
+        },
+        UserRole.CFO: {
+            "departments": ["finance", "general"],
+            "data_types": ["financial_data", "budget", "revenue", "expenses", "investments", "policies"],
+            "restricted_fields": [],
+            "can_access_personal_data": False,
+            "can_view_all_data": False,
+            "can_access_executive_reports": True,
+            "can_view_financial_details": True,
+            "can_access_strategic_data": True
+        },
+        UserRole.CTO: {
+            "departments": ["engineering", "general"],
+            "data_types": ["technical_data", "architecture", "security", "performance", "policies"],
+            "restricted_fields": [],
+            "can_access_personal_data": False,
+            "can_view_all_data": False,
+            "can_access_executive_reports": True,
+            "can_view_financial_details": False,
+            "can_access_strategic_data": True
+        },
+        UserRole.CHRO: {
+            "departments": ["hr", "general"],
+            "data_types": ["employee_data", "policies", "handbook", "payroll", "performance", "workforce_analytics"],
+            "restricted_fields": [],
+            "can_access_personal_data": True,
+            "can_view_all_data": False,
+            "can_access_executive_reports": True,
+            "can_view_financial_details": False,
+            "can_access_strategic_data": True
+        },
+        UserRole.VP_MARKETING: {
+            "departments": ["marketing", "general"],
+            "data_types": ["marketing_data", "campaigns", "customer_insights", "analytics", "policies"],
+            "restricted_fields": [],
+            "can_access_personal_data": False,
+            "can_view_all_data": False,
+            "can_access_executive_reports": True,
+            "can_view_financial_details": False,
             "can_access_strategic_data": True
         },
         UserRole.SYSTEM_ADMIN: {
