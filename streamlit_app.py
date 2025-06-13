@@ -36,16 +36,25 @@ def start_api_server():
     global api_process
     try:
         print("🚀 Starting FastAPI backend server...")
+
+        # Set environment variables for API server
+        env = os.environ.copy()
+        env['API_HOST'] = '0.0.0.0'
+        env['API_PORT'] = '8000'
+
         api_process = subprocess.Popen([
             sys.executable, "main.py", "--mode", "api"
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
         # Wait a bit to see if it starts successfully
-        time.sleep(3)
+        time.sleep(5)
         if api_process.poll() is None:
-            print("✅ FastAPI server started successfully")
+            print("✅ FastAPI server started successfully on port 8000")
         else:
-            print("❌ FastAPI server failed to start")
+            stdout, stderr = api_process.communicate()
+            print(f"❌ FastAPI server failed to start")
+            print(f"STDOUT: {stdout.decode()}")
+            print(f"STDERR: {stderr.decode()}")
 
     except Exception as e:
         print(f"❌ Failed to start FastAPI server: {e}")
@@ -57,6 +66,12 @@ def start_streamlit_app():
 
         # Get port from environment (for deployment) or use default
         port = os.environ.get('PORT', '8501')
+
+        # For Render deployment, use the PORT environment variable
+        if os.environ.get('RENDER'):
+            port = os.environ.get('PORT', '10000')
+
+        print(f"Starting Streamlit on port {port}")
 
         # Start Streamlit directly
         subprocess.run([
