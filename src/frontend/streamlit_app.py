@@ -41,7 +41,9 @@ except ImportError:
     email_service = None
     logger.warning("Email service not available - inquiry emails will be disabled")
 
-# Database initialization import with safe error handling
+# Simple approach: Skip database imports for Streamlit Cloud deployment
+# Use demo authentication only to avoid import issues
+
 init_database = None
 create_default_users = None
 get_db = None
@@ -50,76 +52,25 @@ User = None
 Session = None
 settings = None
 
-# Safe import function
-def safe_import(module_name, attr_names):
-    """Safely import module and return attributes."""
-    try:
-        module = __import__(module_name, fromlist=attr_names)
-        return {attr: getattr(module, attr, None) for attr in attr_names}
-    except Exception as e:
-        logger.debug(f"Failed to import {module_name}: {e}")
-        return {attr: None for attr in attr_names}
-
-# Try different import paths for different deployment environments
-import_paths = [
-    # Standard path
-    {
-        'database.connection': ['init_database', 'create_default_users', 'get_db'],
-        'core.config': ['settings'],
-        'auth.service': ['AuthService'],
-        'database.models': ['User'],
-        'sqlalchemy.orm': ['Session']
-    },
-    # With src prefix
-    {
-        'src.database.connection': ['init_database', 'create_default_users', 'get_db'],
-        'src.core.config': ['settings'],
-        'src.auth.service': ['AuthService'],
-        'src.database.models': ['User'],
-        'sqlalchemy.orm': ['Session']
-    }
-]
-
-for path_config in import_paths:
-    try:
-        # Try to import all modules for this path configuration
-        all_imports = {}
-        success = True
-
-        for module_name, attr_names in path_config.items():
-            imports = safe_import(module_name, attr_names)
-            all_imports.update(imports)
-
-            # Check if critical imports succeeded
-            if module_name.endswith('database.connection') and not all(imports.values()):
-                success = False
-                break
-            if module_name.endswith('auth.service') and not imports.get('AuthService'):
-                success = False
-                break
-            if module_name.endswith('database.models') and not imports.get('User'):
-                success = False
-                break
-
-        if success and all_imports.get('init_database') and all_imports.get('AuthService') and all_imports.get('User'):
-            # Assign successful imports
-            init_database = all_imports.get('init_database')
-            create_default_users = all_imports.get('create_default_users')
-            get_db = all_imports.get('get_db')
-            AuthService = all_imports.get('AuthService')
-            User = all_imports.get('User')
-            Session = all_imports.get('Session')
-            settings = all_imports.get('settings')
-
-            logger.info("Successfully imported database modules")
-            break
-
-    except Exception as e:
-        logger.debug(f"Import path failed: {e}")
-        continue
-
-if not all([init_database, create_default_users, get_db, AuthService, User]):
-    logger.warning("Could not import database modules - running in demo mode")
+# Only try imports if we're not in Streamlit Cloud
+try:
+    # Check if we're in Streamlit Cloud environment
+    import os
+    if not os.environ.get('STREAMLIT_SHARING') and not os.path.exists('/mount/src'):
+        # Local development - try to import database modules
+        try:
+            from src.database.connection import init_database, create_default_users, get_db
+            from src.core.config import settings
+            from src.auth.service import AuthService
+            from src.database.models import User
+            from sqlalchemy.orm import Session
+            logger.info("Successfully imported database modules for local development")
+        except ImportError as e:
+            logger.info(f"Database modules not available, using demo mode: {e}")
+    else:
+        logger.info("Streamlit Cloud detected - using demo authentication mode")
+except Exception as e:
+    logger.info(f"Using demo authentication mode: {e}")
 
 # ============================
 # CONFIGURATION & CONSTANTS
@@ -1363,12 +1314,12 @@ class FinSolveAIAssistant:
 
                 logger.info("Database initialization completed successfully")
             else:
-                logger.warning("Database initialization functions not available")
+                logger.info("Running in demo mode - database initialization not needed")
 
         except Exception as e:
             logger.error(f"Database initialization failed: {str(e)}")
             # Don't fail the app, just log the error
-            st.warning("⚠️ Database initialization failed. Some features may not work properly.")
+            logger.info("Falling back to demo mode")
     
     def get_logo_base64(self) -> str:
         """Get FinSolve logo as base64 string with fallback."""
