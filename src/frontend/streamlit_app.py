@@ -41,21 +41,62 @@ except ImportError:
     email_service = None
     logger.warning("Email service not available - inquiry emails will be disabled")
 
-# Database initialization import
-try:
-    from src.database.connection import init_database, create_default_users, get_db
-    from src.core.config import settings
-    from src.auth.service import AuthService
-    from src.database.models import User
-    from sqlalchemy.orm import Session
-except ImportError as e:
-    logger.error(f"Failed to import database modules: {e}")
-    init_database = None
-    create_default_users = None
-    get_db = None
-    AuthService = None
-    User = None
-    Session = None
+# Database initialization import with multiple path attempts
+init_database = None
+create_default_users = None
+get_db = None
+AuthService = None
+User = None
+Session = None
+
+# Try different import paths for different deployment environments
+import_attempts = [
+    # Standard path
+    lambda: (
+        __import__('src.database.connection', fromlist=['init_database', 'create_default_users', 'get_db']),
+        __import__('src.core.config', fromlist=['settings']),
+        __import__('src.auth.service', fromlist=['AuthService']),
+        __import__('src.database.models', fromlist=['User']),
+        __import__('sqlalchemy.orm', fromlist=['Session'])
+    ),
+    # Direct path (for Streamlit Cloud)
+    lambda: (
+        __import__('database.connection', fromlist=['init_database', 'create_default_users', 'get_db']),
+        __import__('core.config', fromlist=['settings']),
+        __import__('auth.service', fromlist=['AuthService']),
+        __import__('database.models', fromlist=['User']),
+        __import__('sqlalchemy.orm', fromlist=['Session'])
+    ),
+    # Relative path
+    lambda: (
+        __import__('..database.connection', fromlist=['init_database', 'create_default_users', 'get_db'], level=1),
+        __import__('..core.config', fromlist=['settings'], level=1),
+        __import__('..auth.service', fromlist=['AuthService'], level=1),
+        __import__('..database.models', fromlist=['User'], level=1),
+        __import__('sqlalchemy.orm', fromlist=['Session'])
+    )
+]
+
+for attempt in import_attempts:
+    try:
+        db_conn, config, auth, models, orm = attempt()
+        init_database = getattr(db_conn, 'init_database', None)
+        create_default_users = getattr(db_conn, 'create_default_users', None)
+        get_db = getattr(db_conn, 'get_db', None)
+        settings = getattr(config, 'settings', None)
+        AuthService = getattr(auth, 'AuthService', None)
+        User = getattr(models, 'User', None)
+        Session = getattr(orm, 'Session', None)
+
+        if all([init_database, create_default_users, get_db, AuthService, User]):
+            logger.info("Successfully imported database modules")
+            break
+    except ImportError as e:
+        logger.debug(f"Import attempt failed: {e}")
+        continue
+
+if not all([init_database, create_default_users, get_db, AuthService, User]):
+    logger.warning("Could not import database modules - running in limited mode")
 
 # ============================
 # CONFIGURATION & CONSTANTS
@@ -1420,41 +1461,52 @@ class FinSolveAIAssistant:
             st.session_state.loading = True
 
             with st.spinner("🔐 Authenticating securely..."):
-                if AuthService and get_db:
-                    # Direct database authentication
-                    db = next(get_db())
-                    auth_service = AuthService()
+                if AuthService and get_db and User:
+                    try:
+                        # Direct database authentication
+                        db = next(get_db())
+                        auth_service = AuthService()
 
-                    # Get user from database
-                    user = db.query(User).filter(User.username == username).first()
+                        # Get user from database
+                        user = db.query(User).filter(User.username == username).first()
 
-                    if user and auth_service.verify_password(password, user.hashed_password):
-                        # Authentication successful
-                        st.session_state.authenticated = True
-                        st.session_state.access_token = f"direct_auth_{user.uuid}"
-                        st.session_state.user_info = {
-                            "id": user.id,
-                            "uuid": str(user.uuid),
-                            "username": user.username,
-                            "full_name": user.full_name,
-                            "email": user.email,
-                            "role": user.role,
-                            "department": user.department,
-                            "employee_id": user.employee_id
-                        }
-                        st.session_state.error_message = None
+                        if user and auth_service.verify_password(password, user.hashed_password):
+                            # Authentication successful
+                            st.session_state.authenticated = True
+                            st.session_state.access_token = f"direct_auth_{user.uuid}"
+                            st.session_state.user_info = {
+                                "id": user.id,
+                                "uuid": str(user.uuid),
+                                "username": user.username,
+                                "full_name": user.full_name,
+                                "email": user.email,
+                                "role": user.role,
+                                "department": user.department,
+                                "employee_id": user.employee_id
+                            }
+                            st.session_state.error_message = None
 
-                        st.success(f"✅ Welcome, {user.full_name}!")
-                        time.sleep(1)  # Brief pause for UX
-                        st.rerun()
-                    else:
-                        st.session_state.error_message = "Invalid credentials. Please try again."
-                        st.error("❌ Invalid credentials. Please try again.")
+                            st.success(f"✅ Welcome, {user.full_name}!")
+                            time.sleep(1)  # Brief pause for UX
+                            st.rerun()
+                            return
+                        else:
+                            st.session_state.error_message = "Invalid credentials. Please try again."
+                            st.error("❌ Invalid credentials. Please try again.")
+                            return
 
-                    db.close()
-                else:
-                    # Fallback to API authentication
-                    self.authenticate_user_api(username, password)
+                    except Exception as db_error:
+                        logger.error(f"Database authentication failed: {db_error}")
+                    finally:
+                        if 'db' in locals():
+                            db.close()
+
+                # Fallback to demo authentication if database not available
+                if self.authenticate_user_demo(username, password):
+                    return
+
+                # Final fallback to API authentication
+                self.authenticate_user_api(username, password)
 
         except Exception as e:
             error_msg = f"Authentication error: {str(e)}"
@@ -1463,6 +1515,125 @@ class FinSolveAIAssistant:
             logger.error(f"Authentication error: {e}")
         finally:
             st.session_state.loading = False
+
+    def authenticate_user_demo(self, username: str, password: str) -> bool:
+        """Demo authentication for Streamlit deployment when database is not available."""
+        # Demo user credentials (same as in create_default_users)
+        demo_users = {
+            "ceo.finsolve": {
+                "password": "CEO123!",
+                "full_name": "John Smith",
+                "email": "ceo@finsolve.com",
+                "role": "ceo",
+                "department": "Executive",
+                "employee_id": "EXE001"
+            },
+            "cfo.finsolve": {
+                "password": "CFO123!",
+                "full_name": "Sarah Johnson",
+                "email": "cfo@finsolve.com",
+                "role": "cfo",
+                "department": "Finance",
+                "employee_id": "FIN001"
+            },
+            "cto.finsolve": {
+                "password": "CTO123!",
+                "full_name": "Michael Chen",
+                "email": "cto@finsolve.com",
+                "role": "cto",
+                "department": "Technology",
+                "employee_id": "TEC001"
+            },
+            "chro.finsolve": {
+                "password": "CHRO123!",
+                "full_name": "Emily Davis",
+                "email": "chro@finsolve.com",
+                "role": "chro",
+                "department": "Human Resources",
+                "employee_id": "HR001"
+            },
+            "vp.marketing": {
+                "password": "Marketing123!",
+                "full_name": "David Wilson",
+                "email": "vp.marketing@finsolve.com",
+                "role": "vp_marketing",
+                "department": "Marketing",
+                "employee_id": "MKT001"
+            },
+            "admin": {
+                "password": "Admin123!",
+                "full_name": "System Administrator",
+                "email": "admin@finsolve.com",
+                "role": "system_admin",
+                "department": "IT",
+                "employee_id": "ADM001"
+            },
+            "jane.smith": {
+                "password": "HRpass123!",
+                "full_name": "Jane Smith",
+                "email": "jane.smith@finsolve.com",
+                "role": "hr",
+                "department": "Human Resources",
+                "employee_id": "HR002"
+            },
+            "mike.johnson": {
+                "password": "Finance123!",
+                "full_name": "Mike Johnson",
+                "email": "mike.johnson@finsolve.com",
+                "role": "finance",
+                "department": "Finance",
+                "employee_id": "FIN002"
+            },
+            "sarah.wilson": {
+                "password": "Marketing123!",
+                "full_name": "Sarah Wilson",
+                "email": "sarah.wilson@finsolve.com",
+                "role": "marketing",
+                "department": "Marketing",
+                "employee_id": "MKT002"
+            },
+            "peter.pandey": {
+                "password": "Engineering123!",
+                "full_name": "Peter Pandey",
+                "email": "peter.pandey@finsolve.com",
+                "role": "engineering",
+                "department": "Engineering",
+                "employee_id": "ENG001"
+            },
+            "john.doe": {
+                "password": "Employee123!",
+                "full_name": "John Doe",
+                "email": "john.doe@finsolve.com",
+                "role": "employee",
+                "department": "General",
+                "employee_id": "EMP001"
+            }
+        }
+
+        if username in demo_users and demo_users[username]["password"] == password:
+            user_data = demo_users[username]
+
+            # Authentication successful
+            st.session_state.authenticated = True
+            st.session_state.access_token = f"demo_auth_{username}"
+            st.session_state.user_info = {
+                "id": hash(username) % 1000,  # Simple ID generation
+                "uuid": f"demo-{username}",
+                "username": username,
+                "full_name": user_data["full_name"],
+                "email": user_data["email"],
+                "role": user_data["role"],
+                "department": user_data["department"],
+                "employee_id": user_data["employee_id"]
+            }
+            st.session_state.error_message = None
+
+            st.success(f"✅ Welcome, {user_data['full_name']}!")
+            time.sleep(1)  # Brief pause for UX
+            st.rerun()
+            return True
+
+        return False
 
     def authenticate_user_api(self, username: str, password: str):
         """API-based authentication (fallback)."""
