@@ -2,7 +2,7 @@ services:
   - type: web
     name: finsolve-ai-assistant
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements-deploy.txt
     startCommand: python main.py --mode streamlit
     envVars:
       - key: PYTHON_VERSION
@@ -15,5 +15,7 @@ services:
         value: false
       - key: STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION
         value: false
+      - key: RENDER
+        value: true
       - key: PORT
         value: 10000
