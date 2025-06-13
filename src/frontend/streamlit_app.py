@@ -24,14 +24,16 @@ import base64
 from io import BytesIO
 import html
 import re
+import sys
+import os
 from loguru import logger
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
+
+# Add project root to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Email service import
 try:
-    import sys
-    import os
     project_root = Path(__file__).parent.parent.parent
     sys.path.insert(0, str(project_root))
     from src.utils.email_service import email_service
